@@ -24,10 +24,8 @@ export interface PaymentSchedule {
   studentId: string;
   paymentTypeId: string;
   totalAmount: number;
-  paidAmount: number;
-  remainingAmount: number;
-  status: 'in_progress' | 'completed' | 'cancelled';
   installments: PaymentInstallment[];
+  status: 'active' | 'completed' | 'cancelled';
   schoolYear: string;
   createdAt: string;
   updatedAt: string;
@@ -37,12 +35,9 @@ export interface PaymentInstallment {
   id: string;
   scheduleId: string;
   amount: number;
-  paidAmount: number;
-  remainingAmount: number;
   dueDate: string;
-  status: 'pending' | 'partial' | 'paid' | 'overdue' | 'cancelled';
+  status: 'pending' | 'paid' | 'overdue' | 'cancelled';
   description?: string;
-  payments?: Payment[];
 }
 
 export interface Payment {
@@ -51,7 +46,6 @@ export interface Payment {
   studentId: string;
   paymentTypeId: string;
   installmentId?: string;
-  scheduleId?: string;
   amount: number;
   paymentMethodId: string;
   reference?: string;
@@ -62,4 +56,89 @@ export interface Payment {
   attachments?: string[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface StudentFeeBalance {
+  id: string;
+  studentId: string;
+  feeStructureId: string;
+  totalAmount: number;
+  paidAmount: number;
+  remainingAmount: number;
+  status: 'unpaid' | 'partial' | 'completed' | 'overdue';
+  dueDate: string;
+  installments: FeeInstallment[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FeeInstallment {
+  id: string;
+  balanceId: string;
+  installmentNumber: number;
+  amount: number;
+  paidAmount: number;
+  remainingAmount: number;
+  dueDate: string;
+  status: 'unpaid' | 'partial' | 'completed' | 'overdue';
+  payments: Payment[];
+}
+
+export interface PaymentRestriction {
+  id: string;
+  studentId: string;
+  type: 'bulletin_access' | 'exam_registration' | 'library_access' | 'activities_access';
+  reason: string;
+  appliedDate: string;
+  isActive: boolean;
+  createdBy: string;
+}
+
+export interface Refund {
+  id: string;
+  paymentId: string;
+  amount: number;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected' | 'processed';
+  requestedBy: string;
+  requestedDate: string;
+  approvedBy?: string;
+  approvedDate?: string;
+  processedDate?: string;
+  notes?: string;
+}
+
+export interface Credit {
+  id: string;
+  studentId: string;
+  amount: number;
+  source: 'refund' | 'overpayment' | 'scholarship' | 'adjustment';
+  description: string;
+  isUsed: boolean;
+  usedAmount: number;
+  expiryDate?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaymentAlert {
+  id: string;
+  studentId: string;
+  type: 'due_soon' | 'overdue' | 'payment_received' | 'restriction_applied';
+  message: string;
+  severity: 'info' | 'warning' | 'error';
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface PaymentDashboardStats {
+  totalCollected: number;
+  totalPending: number;
+  totalOverdue: number;
+  totalRefunds: number;
+  paymentsByType: Record<string, number>;
+  paymentsByMethod: Record<string, number>;
+  collectionRate: number;
+  overdueCount: number;
+  restrictedStudents: number;
 }

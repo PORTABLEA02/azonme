@@ -3,19 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { X, Receipt, AlertTriangle } from 'lucide-react';
-import { 
-  calculatePaymentBalance, 
-  calculateInstallmentBalance, 
-  validatePaymentAmount,
-  generateReceiptNumber,
-  formatAmount 
-} from '../../utils/paymentCalculations';
 
 interface PaymentFormProps {
   isOpen: boolean;
   onClose: () => void;
-  student?: any;
-  fee?: any;
   payment?: any;
   onSave: (paymentData: any) => void;
 }
@@ -23,8 +14,6 @@ interface PaymentFormProps {
 export const PaymentForm: React.FC<PaymentFormProps> = ({ 
   isOpen, 
   onClose, 
-  student,
-  fee,
   student,
   fee,
   onSave 
@@ -44,7 +33,6 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [availableInstallments, setAvailableInstallments] = useState<any[]>([]);
-  const [paymentPreview, setPaymentPreview] = useState<any>(null);
 
   // Simuler les échéances disponibles pour ce frais
   React.useEffect(() => {
@@ -63,50 +51,6 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
     }
   }, [fee]);
 
-  // Calculer l'aperçu du paiement quand le montant change
-  React.useEffect(() => {
-    if (formData.amount && parseFloat(formData.amount) > 0) {
-      const paymentAmount = parseFloat(formData.amount);
-      
-      if (formData.installmentId) {
-        // Paiement sur une échéance spécifique
-        const installment = availableInstallments.find(inst => inst.id === formData.installmentId);
-        if (installment) {
-          const installmentResult = calculateInstallmentBalance(
-            installment.paidAmount || 0,
-            installment.amount,
-            paymentAmount
-          );
-          
-          const feeResult = calculatePaymentBalance(
-            fee.paidAmount || 0,
-            fee.totalAmount,
-            paymentAmount
-          );
-          
-          setPaymentPreview({
-            installment: installmentResult,
-            fee: feeResult,
-            type: 'installment'
-          });
-        }
-      } else {
-        // Paiement global
-        const feeResult = calculatePaymentBalance(
-          fee.paidAmount || 0,
-          fee.totalAmount,
-          paymentAmount
-        );
-        
-        setPaymentPreview({
-          fee: feeResult,
-          type: 'global'
-        });
-      }
-    } else {
-      setPaymentPreview(null);
-    }
-  }, [formData.amount, formData.installmentId, availableInstallments, fee]);
   if (!isOpen) return null;
 
   const paymentMethods = [
@@ -116,6 +60,11 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
     { id: 'PM-004', name: 'Virement bancaire', code: 'bank_transfer', requiresReference: true },
   ];
 
+  const generateReceiptNumber = () => {
+    const timestamp = Date.now();
+    const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    return `REC-${timestamp.toString().slice(-6)}${randomNum}`;
+  };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -127,12 +76,10 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
     const paymentAmount = parseFloat(formData.amount);
     const maxAmount = formData.installmentId 
       ? availableInstallments.find(inst => inst.id === formData.installmentId)?.remainingAmount || 0
-      : fee?.remainingAmount || 0;
+      : formData.maxAmount;
 
-    // RG-PAY-ECH-3 : Validation du montant
-    const validation = validatePaymentAmount(paymentAmount, maxAmount);
-    if (!validation.isValid) {
-      newErrors.amount = validation.error || 'Montant invalide';
+    if (paymentAmount > maxAmount) {
+      newErrors.amount = `Le montant ne peut pas dépasser ${formatAmount(maxAmount)}`;
     }
 
     if (!formData.paymentMethodId) {
@@ -165,18 +112,28 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
       ? availableInstallments.find(inst => inst.id === formData.installmentId)
       : null;
 
+    // Déterminer le statut du paiement
+    let paymentStatus = 'completed';
+    if (selectedInstallment) {
+      paymentStatus = paymentAmount < selectedInstallment.remainingAmount ? 'partial' : 'completed';
+    } else {
+      paymentStatus = paymentAmount < fee.remainingAmount ? 'partial' : 'completed';
+    }
 
-    // RG-PAY-ECH-1 et RG-PAY-ECH-2 : Calculs automatiques
     const paymentData = {
       ...formData,
       id: `PAY-${Date.now()}`,
       receiptNumber: generateReceiptNumber(),
       amount: parseFloat(formData.amount),
-      status: 'completed',
+      status: paymentStatus,
       processedBy: 'current-user-id', // Dans un vrai système, ce serait l'utilisateur connecté
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      paymentPreview: paymentPreview, // Inclure les calculs pour la sauvegarde
+      feeBalance: {
+        previousRemaining: fee.remainingAmount,
+        newRemaining: fee.remainingAmount - paymentAmount,
+        isFullyPaid: (fee.remainingAmount - paymentAmount) <= 0,
+      }
     };
 
     onSave(paymentData);
@@ -218,6 +175,13 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
     }
   };
 
+  const formatAmount = (amount: number) => {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'XOF',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
 
   const selectedMethod = paymentMethods.find(m => m.id === formData.paymentMethodId);
 
@@ -404,72 +368,6 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
                 />
               </div>
 
-              {/* Aperçu du paiement */}
-              {paymentPreview && (
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-blue-900 mb-3">Aperçu du paiement :</h4>
-                  
-                  {paymentPreview.type === 'installment' && paymentPreview.installment && (
-                    <div className="mb-3 p-3 bg-white rounded border">
-                      <p className="text-sm font-medium text-gray-900 mb-2">Impact sur l'échéance :</p>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="text-gray-600">Nouveau montant payé :</span>
-                          <span className="ml-2 font-medium text-emerald-600">
-                            {formatAmount(paymentPreview.installment.newPaidAmount)}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Nouveau solde :</span>
-                          <span className="ml-2 font-medium text-red-600">
-                            {formatAmount(paymentPreview.installment.newRemainingAmount)}
-                          </span>
-                        </div>
-                        <div className="col-span-2">
-                          <span className="text-gray-600">Nouveau statut :</span>
-                          <span className={`ml-2 px-2 py-1 text-xs rounded-full font-medium ${
-                            paymentPreview.installment.newStatus === 'paid' ? 'bg-emerald-100 text-emerald-800' :
-                            paymentPreview.installment.newStatus === 'partial' ? 'bg-blue-100 text-blue-800' :
-                            'bg-amber-100 text-amber-800'
-                          }`}>
-                            {paymentPreview.installment.newStatus === 'paid' ? 'Payé' :
-                             paymentPreview.installment.newStatus === 'partial' ? 'Partiel' : 'En attente'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="p-3 bg-white rounded border">
-                    <p className="text-sm font-medium text-gray-900 mb-2">Impact sur le frais total :</p>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-gray-600">Nouveau montant payé :</span>
-                        <span className="ml-2 font-medium text-emerald-600">
-                          {formatAmount(paymentPreview.fee.newPaidAmount)}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Nouveau solde :</span>
-                        <span className="ml-2 font-medium text-red-600">
-                          {formatAmount(paymentPreview.fee.newRemainingAmount)}
-                        </span>
-                      </div>
-                      <div className="col-span-2">
-                        <span className="text-gray-600">Nouveau statut :</span>
-                        <span className={`ml-2 px-2 py-1 text-xs rounded-full font-medium ${
-                          paymentPreview.fee.newStatus === 'completed' ? 'bg-emerald-100 text-emerald-800' :
-                          paymentPreview.fee.newStatus === 'partial' ? 'bg-blue-100 text-blue-800' :
-                          'bg-amber-100 text-amber-800'
-                        }`}>
-                          {paymentPreview.fee.newStatus === 'completed' ? 'Terminé' :
-                           paymentPreview.fee.newStatus === 'partial' ? 'En cours (partiel)' : 'En cours'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
               {/* Règles de gestion */}
               <div className="bg-blue-50 p-4 rounded-lg">
                 <div className="flex items-start space-x-2">
@@ -477,11 +375,11 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
                   <div className="text-sm text-blue-800">
                     <p className="font-medium mb-1">Règles appliquées :</p>
                     <ul className="space-y-1">
-                      <li>• RG-PAY-ECH-1 : Calcul automatique du solde après paiement</li>
-                      <li>• RG-PAY-ECH-2 : Mise à jour des échéances concernées</li>
-                      <li>• RG-PAY-ECH-3 : Validation du montant (≤ solde restant)</li>
-                      <li>• RG-PAY-ECH-5 : Génération automatique du numéro de reçu</li>
-                      <li>• Paiements partiels autorisés sur chaque échéance</li>
+                      <li>• Numéro de reçu généré automatiquement</li>
+                      <li>• Paiements partiels autorisés</li>
+                      <li>• Statut "Terminé" uniquement si montant total payé</li>
+                      <li>• Référence obligatoire selon le mode de paiement</li>
+                      <li>• Historique conservé pour suivi et audit</li>
                     </ul>
                   </div>
                 </div>
