@@ -11,7 +11,6 @@ import { RoomsList } from './rooms/RoomsList';
 import { ScheduleManager } from './schedule/ScheduleManager';
 import { PaymentsList } from './payments/PaymentsList';
 import { PaymentDashboard } from './payments/PaymentDashboard';
-import { FeeStructureManager } from './payments/FeeStructureManager';
 import { PaymentCollectionInterface } from './payments/PaymentCollectionInterface';
 
 export const MainApp: React.FC = () => {
@@ -40,8 +39,6 @@ export const MainApp: React.FC = () => {
         );
       case 'payments-list':
         return <PaymentsList />;
-      case 'fee-structures':
-        return <FeeStructureManager />;
       case 'schedule':
         return (
           <ScheduleManager />
