@@ -65,6 +65,24 @@ export const TeacherForm: React.FC<TeacherFormProps> = ({
       newErrors.subjects = 'Au moins une matière est obligatoire';
     }
 
+    // Vérification de l'unicité de l'email
+    // Dans un vrai système, cette vérification se ferait côté serveur
+    const existingEmails = [
+      'jean.martin@school.fr',
+      'marie.dubois@school.fr',
+      'pierre.leroy@school.fr',
+      'sophie.moreau@school.fr',
+    ];
+
+    const isDuplicateEmail = existingEmails.some(
+      email => email.toLowerCase() === formData.email.toLowerCase() &&
+               (!teacher || email !== teacher.email)
+    );
+
+    if (isDuplicateEmail) {
+      newErrors.email = 'Un enseignant avec cet email existe déjà';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -299,6 +317,17 @@ export const TeacherForm: React.FC<TeacherFormProps> = ({
                 <p className="text-xs text-gray-500 mt-1">
                   Les enseignants inactifs ne peuvent pas accéder au système
                 </p>
+              </div>
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h4 className="font-medium text-blue-900 mb-2">Règles de gestion appliquées :</h4>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• Identifiant unique généré automatiquement (TCH-YYYY-XXX)</li>
+                  <li>• Tous les champs obligatoires sont vérifiés</li>
+                  <li>• Vérification de l'unicité de l'adresse email</li>
+                  <li>• Au moins une matière doit être enseignée</li>
+                  <li>• Statut par défaut : Actif (peut se connecter au système)</li>
+                  <li>• Horodatage automatique de création et modification</li>
+                </ul>
               </div>
 
               {/* Actions */}

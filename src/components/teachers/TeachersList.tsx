@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Avatar } from '../ui/Avatar';
+import { TeacherForm } from './TeacherForm';
 import { 
   Search, 
   Filter, 
@@ -23,8 +24,10 @@ export const TeachersList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedSubject, setSelectedSubject] = useState('all');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedTeacher, setSelectedTeacher] = useState<any>(null);
+  const [teachers, setTeachers] = useState([
 
-  const teachers = [
     {
       id: 'TCH-2024-001',
       firstName: 'Jean',
@@ -81,7 +84,7 @@ export const TeachersList: React.FC = () => {
       createdAt: '2021-09-01',
       updatedAt: '2024-06-15',
     },
-  ];
+  ]);
 
   const subjects = [
     { id: 'all', name: 'Toutes les matières' },
@@ -119,8 +122,53 @@ export const TeachersList: React.FC = () => {
   };
 
   const handleStatusToggle = (teacherId: string, currentStatus: string) => {
-    // This would typically make an API call to update the teacher status
-    console.log(`Toggling status for teacher ${teacherId} from ${currentStatus}`);
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    setTeachers(prevTeachers => 
+      prevTeachers.map(teacher => 
+        teacher.id === teacherId 
+          ? { ...teacher, status: newStatus as 'active' | 'inactive', updatedAt: new Date().toISOString() }
+          : teacher
+      )
+    );
+    
+    // Afficher une notification de succès
+    const teacher = teachers.find(t => t.id === teacherId);
+    if (teacher) {
+      alert(`Enseignant ${teacher.firstName} ${teacher.lastName} ${newStatus === 'active' ? 'activé' : 'désactivé'} avec succès`);
+    }
+  };
+
+  const handleSaveTeacher = (teacherData: any) => {
+    if (selectedTeacher) {
+      // Modification d'un enseignant existant
+      setTeachers(prevTeachers => 
+        prevTeachers.map(teacher => 
+          teacher.id === selectedTeacher.id ? teacherData : teacher
+        )
+      );
+      alert(`Enseignant ${teacherData.firstName} ${teacherData.lastName} modifié avec succès`);
+    } else {
+      // Ajout d'un nouvel enseignant
+      setTeachers(prevTeachers => [...prevTeachers, teacherData]);
+      alert(`Enseignant ${teacherData.firstName} ${teacherData.lastName} ajouté avec succès`);
+    }
+    
+    setSelectedTeacher(null);
+  };
+
+  const handleEditTeacher = (teacher: any) => {
+    setSelectedTeacher(teacher);
+    setIsFormOpen(true);
+  };
+
+  const handleDeleteTeacher = (teacherId: string) => {
+    const teacher = teachers.find(t => t.id === teacherId);
+    if (!teacher) return;
+
+    if (window.confirm(`Êtes-vous sûr de vouloir supprimer l'enseignant "${teacher.firstName} ${teacher.lastName}" ?`)) {
+      setTeachers(prevTeachers => prevTeachers.filter(t => t.id !== teacherId));
+      alert(`Enseignant ${teacher.firstName} ${teacher.lastName} supprimé avec succès`);
+    }
   };
 
   return (
@@ -130,7 +178,7 @@ export const TeachersList: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">Gestion des enseignants</h1>
           <p className="text-gray-600 mt-1">Gérer les profils et informations des enseignants</p>
         </div>
-        <Button className="w-full sm:w-auto">
+        <Button onClick={() => setIsFormOpen(true)} className="w-full sm:w-auto">
           <Plus className="w-4 h-4 mr-2" />
           Nouvel enseignant
         </Button>
@@ -326,10 +374,16 @@ export const TeachersList: React.FC = () => {
                       <UserCheck className="w-4 h-4" />
                     }
                   </button>
-                  <button className="p-1 hover:bg-blue-50 hover:text-blue-600 rounded transition-colors">
+                  <button 
+                    onClick={() => handleEditTeacher(teacher)}
+                    className="p-1 hover:bg-blue-50 hover:text-blue-600 rounded transition-colors"
+                  >
                     <Edit className="w-4 h-4" />
                   </button>
-                  <button className="p-1 hover:bg-red-50 hover:text-red-600 rounded transition-colors">
+                  <button 
+                    onClick={() => handleDeleteTeacher(teacher.id)}
+                    className="p-1 hover:bg-red-50 hover:text-red-600 rounded transition-colors"
+                  >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -354,6 +408,17 @@ export const TeachersList: React.FC = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Teacher Form Modal */}
+      <TeacherForm
+        isOpen={isFormOpen}
+        onClose={() => {
+          setIsFormOpen(false);
+          setSelectedTeacher(null);
+        }}
+        teacher={selectedTeacher}
+        onSave={handleSaveTeacher}
+      />
     </div>
   );
 };
