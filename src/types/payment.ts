@@ -24,8 +24,10 @@ export interface PaymentSchedule {
   studentId: string;
   paymentTypeId: string;
   totalAmount: number;
+  paidAmount: number;
+  remainingAmount: number;
+  status: 'in_progress' | 'completed' | 'cancelled';
   installments: PaymentInstallment[];
-  status: 'active' | 'completed' | 'cancelled';
   schoolYear: string;
   createdAt: string;
   updatedAt: string;
@@ -35,9 +37,12 @@ export interface PaymentInstallment {
   id: string;
   scheduleId: string;
   amount: number;
+  paidAmount: number;
+  remainingAmount: number;
   dueDate: string;
-  status: 'pending' | 'paid' | 'overdue' | 'cancelled';
+  status: 'pending' | 'partial' | 'paid' | 'overdue' | 'cancelled';
   description?: string;
+  payments?: Payment[];
 }
 
 export interface Payment {
@@ -46,6 +51,7 @@ export interface Payment {
   studentId: string;
   paymentTypeId: string;
   installmentId?: string;
+  scheduleId?: string;
   amount: number;
   paymentMethodId: string;
   reference?: string;

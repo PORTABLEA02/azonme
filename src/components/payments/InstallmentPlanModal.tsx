@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Avatar } from '../ui/Avatar';
+import { formatAmount as utilFormatAmount } from '../../utils/paymentCalculations';
 import { 
   X, 
   Calendar,
@@ -28,18 +29,14 @@ export const InstallmentPlanModal: React.FC<InstallmentPlanModalProps> = ({
 
   if (!isOpen || !fee) return null;
 
-  const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'XOF',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
+  const formatAmount = utilFormatAmount;
 
   const getInstallmentStatusIcon = (status: string) => {
     switch (status) {
       case 'paid':
         return <CheckCircle className="w-5 h-5 text-emerald-600" />;
+      case 'partial':
+        return <Clock className="w-5 h-5 text-blue-600" />;
       case 'pending':
         return <Clock className="w-5 h-5 text-amber-600" />;
       case 'overdue':
@@ -53,6 +50,8 @@ export const InstallmentPlanModal: React.FC<InstallmentPlanModalProps> = ({
     switch (status) {
       case 'paid':
         return 'bg-emerald-100 text-emerald-800';
+      case 'partial':
+        return 'bg-blue-100 text-blue-800';
       case 'pending':
         return 'bg-amber-100 text-amber-800';
       case 'overdue':
@@ -65,6 +64,7 @@ export const InstallmentPlanModal: React.FC<InstallmentPlanModalProps> = ({
   const getInstallmentStatusLabel = (status: string) => {
     const statusLabels = {
       paid: 'Payé',
+      partial: 'Partiel',
       pending: 'En attente',
       overdue: 'En retard',
     };
@@ -85,6 +85,7 @@ export const InstallmentPlanModal: React.FC<InstallmentPlanModalProps> = ({
   const totalPaid = fee.installments.reduce((sum: number, inst: any) => sum + inst.paidAmount, 0);
   const totalRemaining = fee.totalAmount - totalPaid;
   const completedInstallments = fee.installments.filter((inst: any) => inst.status === 'paid').length;
+  const partialInstallments = fee.installments.filter((inst: any) => inst.status === 'partial').length;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -142,8 +143,13 @@ export const InstallmentPlanModal: React.FC<InstallmentPlanModalProps> = ({
               <div className="text-center p-4 bg-purple-50 rounded-lg">
                 <p className="text-sm text-purple-600">Progression</p>
                 <p className="text-xl font-bold text-purple-900">
-                  {completedInstallments}/{fee.installments.length}
+                  {completedInstallments + partialInstallments}/{fee.installments.length}
                 </p>
+                {partialInstallments > 0 && (
+                  <p className="text-xs text-purple-600 mt-1">
+                    ({partialInstallments} partielles)
+                  </p>
+                )}
               </div>
             </div>
 
@@ -251,11 +257,11 @@ export const InstallmentPlanModal: React.FC<InstallmentPlanModalProps> = ({
             <div className="mt-6 bg-blue-50 p-4 rounded-lg">
               <h4 className="font-medium text-blue-900 mb-2">Règles de gestion des échéanciers :</h4>
               <ul className="text-sm text-blue-800 space-y-1">
-                <li>• Les paiements partiels sont autorisés sur chaque échéance</li>
-                <li>• Le statut passe à "Terminé" uniquement quand le montant total est payé</li>
-                <li>• Les échéances en retard génèrent automatiquement des alertes</li>
-                <li>• Un reçu est généré pour chaque paiement d'échéance</li>
-                <li>• Les modifications d'échéancier nécessitent une validation administrative</li>
+                <li>• RG-PAY-ECH-1 : Calcul automatique des soldes après chaque paiement</li>
+                <li>• RG-PAY-ECH-2 : Paiements partiels autorisés sur chaque échéance</li>
+                <li>• RG-PAY-ECH-4 : Statut "Terminé" uniquement quand tout est payé</li>
+                <li>• RG-PAY-ECH-5 : Génération automatique des numéros de reçu</li>
+                <li>• Alertes automatiques pour les échéances en retard</li>
               </ul>
             </div>
 

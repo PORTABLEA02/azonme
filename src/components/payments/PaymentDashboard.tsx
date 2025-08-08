@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Avatar } from '../ui/Avatar';
+import { formatAmount as utilFormatAmount } from '../../utils/paymentCalculations';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -42,6 +43,11 @@ export const PaymentDashboard: React.FC = () => {
       cash: 1200000,
       bank_transfer: 650000,
       check: 300000,
+    },
+    paymentsByStatus: {
+      completed: 3800000,
+      in_progress: 450000,
+      partial: 320000,
     },
   };
 
@@ -91,18 +97,16 @@ export const PaymentDashboard: React.FC = () => {
     },
   ];
 
-  const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'XOF',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
+  const formatAmount = utilFormatAmount;
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
         return 'bg-emerald-100 text-emerald-800';
+      case 'in_progress':
+        return 'bg-blue-100 text-blue-800';
+      case 'partial':
+        return 'bg-amber-100 text-amber-800';
       case 'pending':
         return 'bg-amber-100 text-amber-800';
       case 'overdue':
@@ -263,27 +267,26 @@ export const PaymentDashboard: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Répartition par mode de paiement */}
+        {/* Répartition par statut de paiement */}
         <Card>
           <CardHeader>
-            <CardTitle>Répartition par mode</CardTitle>
+            <CardTitle>Répartition par statut</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {Object.entries(dashboardStats.paymentsByMethod).map(([method, amount]) => {
+              {Object.entries(dashboardStats.paymentsByStatus).map(([status, amount]) => {
                 const percentage = (amount / dashboardStats.totalCollected) * 100;
-                const methodLabels = {
-                  mobile_money: 'Mobile Money',
-                  cash: 'Espèces',
-                  bank_transfer: 'Virement bancaire',
-                  check: 'Chèque',
+                const statusLabels = {
+                  completed: 'Paiements terminés',
+                  in_progress: 'Paiements en cours',
+                  partial: 'Paiements partiels',
                 };
                 
                 return (
-                  <div key={method}>
+                  <div key={status}>
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm font-medium text-gray-700">
-                        {methodLabels[method as keyof typeof methodLabels]}
+                        {statusLabels[status as keyof typeof statusLabels]}
                       </span>
                       <span className="text-sm text-gray-600">
                         {formatAmount(amount)} ({percentage.toFixed(1)}%)
@@ -291,7 +294,10 @@ export const PaymentDashboard: React.FC = () => {
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div 
-                        className="bg-emerald-500 h-2 rounded-full transition-all" 
+                        className={`h-2 rounded-full transition-all ${
+                          status === 'completed' ? 'bg-emerald-500' :
+                          status === 'in_progress' ? 'bg-blue-500' : 'bg-amber-500'
+                        }`}
                         style={{ width: `${percentage}%` }}
                       ></div>
                     </div>
@@ -383,21 +389,21 @@ export const PaymentDashboard: React.FC = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h4 className="font-medium text-gray-900 mb-3">Alertes automatiques</h4>
+              <h4 className="font-medium text-gray-900 mb-3">Règles d'échelonnement</h4>
               <ul className="text-sm text-gray-700 space-y-2">
-                <li>• Rappel 7 jours avant échéance</li>
-                <li>• Alerte immédiate en cas de retard</li>
-                <li>• Notification aux parents par SMS/email</li>
-                <li>• Escalade vers l'administration après 15 jours</li>
+                <li>• RG-PAY-ECH-1 : Calcul automatique des soldes</li>
+                <li>• RG-PAY-ECH-2 : Mise à jour des échéances</li>
+                <li>• RG-PAY-ECH-3 : Validation des montants</li>
+                <li>• RG-PAY-ECH-4 : Gestion des statuts</li>
               </ul>
             </div>
             <div>
-              <h4 className="font-medium text-gray-900 mb-3">Restrictions automatiques</h4>
+              <h4 className="font-medium text-gray-900 mb-3">Fonctionnalités</h4>
               <ul className="text-sm text-gray-700 space-y-2">
-                <li>• Blocage d'accès au bulletin après 30 jours</li>
-                <li>• Refus d'inscription aux examens</li>
-                <li>• Suspension des activités parascolaires</li>
-                <li>• Restriction d'accès à la bibliothèque</li>
+                <li>• Paiements partiels autorisés</li>
+                <li>• Génération automatique des reçus</li>
+                <li>• Suivi en temps réel des soldes</li>
+                <li>• Historique complet des paiements</li>
               </ul>
             </div>
           </div>
