@@ -41,9 +41,32 @@ export interface Class {
   id: string;
   name: string;
   level: string;
+  cycle: string;
+  schoolYear: string;
+  specialty?: string;
+  capacity: number;
+  currentStudentCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ClassTeacher {
+  id: string;
+  classId: string;
   teacherId: string;
-  studentCount: number;
-  subjects: string[];
+  subjectId: string;
+  assignedAt: string;
+}
+
+export interface StudentClassHistory {
+  id: string;
+  studentId: string;
+  classId: string;
+  schoolYear: string;
+  assignedAt: string;
+  removedAt?: string;
+  reason?: string;
+  assignedBy: string;
 }
 
 export interface Grade {
