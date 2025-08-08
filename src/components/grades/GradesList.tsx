@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Avatar } from '../ui/Avatar';
+import { GradeForm } from './GradeForm';
 import { 
   Plus, 
   TrendingUp, 
@@ -9,13 +10,16 @@ import {
   Minus,
   BarChart3,
   Filter,
+  Edit,
 } from 'lucide-react';
 
 export const GradesList: React.FC = () => {
   const [selectedSubject, setSelectedSubject] = useState('all');
   const [selectedClass, setSelectedClass] = useState('all');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedGrade, setSelectedGrade] = useState<any>(null);
+  const [grades, setGrades] = useState([
 
-  const grades = [
     {
       id: '1',
       student: { name: 'Emma Martin', avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150' },
@@ -64,7 +68,7 @@ export const GradesList: React.FC = () => {
       class: '4C',
       comment: 'Peut mieux faire',
     },
-  ];
+  ]);
 
   const subjects = [
     { id: 'all', name: 'Toutes les matières' },
@@ -110,8 +114,33 @@ export const GradesList: React.FC = () => {
     return matchesSubject && matchesClass;
   });
 
+  const handleSaveGrade = (gradeData: any) => {
+    if (selectedGrade) {
+      // Modification d'une note existante
+      setGrades(prevGrades => 
+        prevGrades.map(grade => 
+          grade.id === selectedGrade.id ? gradeData : grade
+        )
+      );
+      alert(`Note de ${gradeData.studentName} modifiée avec succès`);
+    } else {
+      // Ajout d'une nouvelle note
+      setGrades(prevGrades => [...prevGrades, gradeData]);
+      alert(`Note de ${gradeData.studentName} ajoutée avec succès`);
+    }
+    
+    setSelectedGrade(null);
+  };
+
+  const handleEditGrade = (grade: any) => {
+    setSelectedGrade(grade);
+    setIsFormOpen(true);
+  };
+
   // Calculate statistics
-  const averageGrade = filteredGrades.reduce((sum, grade) => sum + (grade.grade / grade.maxGrade) * 20, 0) / filteredGrades.length;
+  const averageGrade = filteredGrades.length > 0 
+    ? filteredGrades.reduce((sum, grade) => sum + (grade.grade / grade.maxGrade) * 20, 0) / filteredGrades.length
+    : 0;
   const excellentCount = filteredGrades.filter(grade => (grade.grade / grade.maxGrade) * 100 >= 80).length;
   const needsImprovementCount = filteredGrades.filter(grade => (grade.grade / grade.maxGrade) * 100 < 60).length;
 
@@ -122,7 +151,7 @@ export const GradesList: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">Gestion des notes</h1>
           <p className="text-gray-600 mt-1">Saisir et consulter les évaluations</p>
         </div>
-        <Button className="w-full sm:w-auto">
+        <Button onClick={() => setIsFormOpen(true)} className="w-full sm:w-auto">
           <Plus className="w-4 h-4 mr-2" />
           Nouvelle note
         </Button>
@@ -228,6 +257,7 @@ export const GradesList: React.FC = () => {
                   <th className="text-left p-2 md:p-4 font-medium text-gray-600 text-xs md:text-sm hidden md:table-cell">Date</th>
                   <th className="text-left p-2 md:p-4 font-medium text-gray-600 text-xs md:text-sm hidden lg:table-cell">Enseignant</th>
                   <th className="text-left p-2 md:p-4 font-medium text-gray-600 text-xs md:text-sm hidden xl:table-cell">Commentaire</th>
+                  <th className="text-left p-2 md:p-4 font-medium text-gray-600 text-xs md:text-sm">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -267,6 +297,16 @@ export const GradesList: React.FC = () => {
                     <td className="p-2 md:p-4 hidden xl:table-cell">
                       <span className="text-sm text-gray-600 truncate max-w-xs">{grade.comment}</span>
                     </td>
+                    <td className="p-2 md:p-4">
+                      <div className="flex space-x-1">
+                        <button 
+                          onClick={() => handleEditGrade(grade)}
+                          className="p-1 hover:bg-blue-50 hover:text-blue-600 rounded transition-colors"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -274,6 +314,17 @@ export const GradesList: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Grade Form Modal */}
+      <GradeForm
+        isOpen={isFormOpen}
+        onClose={() => {
+          setIsFormOpen(false);
+          setSelectedGrade(null);
+        }}
+        grade={selectedGrade}
+        onSave={handleSaveGrade}
+      />
     </div>
   );
 };
