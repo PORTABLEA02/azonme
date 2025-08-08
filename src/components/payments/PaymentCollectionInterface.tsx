@@ -245,7 +245,33 @@ export const PaymentCollectionInterface: React.FC = () => {
 
   const handlePaymentSave = (paymentData: any) => {
     console.log('Payment saved:', paymentData);
-    // Logique de sauvegarde du paiement
+    
+    // Mettre à jour le solde du frais
+    const updatedFee = {
+      ...selectedFee,
+      paidAmount: selectedFee.paidAmount + paymentData.amount,
+      remainingAmount: selectedFee.remainingAmount - paymentData.amount,
+      status: paymentData.feeBalance.isFullyPaid ? 'completed' : 'partial'
+    };
+    
+    // Mettre à jour l'échéance si applicable
+    if (paymentData.installmentId) {
+      const installment = updatedFee.installments.find((inst: any) => inst.id === paymentData.installmentId);
+      if (installment) {
+        installment.paidAmount += paymentData.amount;
+        installment.remainingAmount -= paymentData.amount;
+        installment.status = installment.remainingAmount <= 0 ? 'completed' : 'partial';
+        installment.payments = installment.payments || [];
+        installment.payments.push(paymentData);
+      }
+    }
+    
+    console.log('Updated fee balance:', updatedFee);
+    
+    // Fermer le modal et actualiser les données
+    setIsPaymentFormOpen(false);
+    setSelectedStudent(null);
+    setSelectedFee(null);
   };
 
   const handleInstallmentPlan = (fee: any, student: any) => {

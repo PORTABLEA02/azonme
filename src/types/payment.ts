@@ -49,13 +49,39 @@ export interface Payment {
   amount: number;
   paymentMethodId: string;
   reference?: string;
-  status: 'pending' | 'completed' | 'cancelled' | 'refunded';
+  status: 'pending' | 'completed' | 'cancelled' | 'refunded' | 'partial';
   paidDate: string;
   processedBy: string;
   notes?: string;
   attachments?: string[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface StudentFeeBalance {
+  id: string;
+  studentId: string;
+  feeStructureId: string;
+  totalAmount: number;
+  paidAmount: number;
+  remainingAmount: number;
+  status: 'unpaid' | 'partial' | 'completed' | 'overdue';
+  dueDate: string;
+  installments: FeeInstallment[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FeeInstallment {
+  id: string;
+  balanceId: string;
+  installmentNumber: number;
+  amount: number;
+  paidAmount: number;
+  remainingAmount: number;
+  dueDate: string;
+  status: 'unpaid' | 'partial' | 'completed' | 'overdue';
+  payments: Payment[];
 }
 
 export interface PaymentRestriction {

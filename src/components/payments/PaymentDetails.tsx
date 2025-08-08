@@ -36,6 +36,8 @@ export const PaymentDetails: React.FC<PaymentDetailsProps> = ({
     switch (status) {
       case 'completed':
         return <CheckCircle className="w-5 h-5 text-emerald-600" />;
+      case 'partial':
+        return <Clock className="w-5 h-5 text-blue-600" />;
       case 'pending':
         return <Clock className="w-5 h-5 text-amber-600" />;
       case 'cancelled':
@@ -50,6 +52,7 @@ export const PaymentDetails: React.FC<PaymentDetailsProps> = ({
   const getStatusLabel = (status: string) => {
     const statusLabels = {
       completed: 'Payé et validé',
+      partial: 'Paiement partiel',
       pending: 'En attente de validation',
       cancelled: 'Annulé',
       refunded: 'Remboursé',
@@ -258,12 +261,28 @@ export const PaymentDetails: React.FC<PaymentDetailsProps> = ({
                 )}
 
                 {/* Montant */}
-                <div className="bg-emerald-50 p-6 rounded-lg">
+                <div className={`p-6 rounded-lg ${
+                  payment.status === 'completed' ? 'bg-emerald-50' : 
+                  payment.status === 'partial' ? 'bg-blue-50' : 'bg-amber-50'
+                }`}>
                   <div className="text-center">
-                    <p className="text-sm text-emerald-700 mb-2">Montant payé</p>
-                    <p className="text-3xl font-bold text-emerald-900">
+                    <p className={`text-sm mb-2 ${
+                      payment.status === 'completed' ? 'text-emerald-700' : 
+                      payment.status === 'partial' ? 'text-blue-700' : 'text-amber-700'
+                    }`}>
+                      {payment.status === 'partial' ? 'Paiement partiel' : 'Montant payé'}
+                    </p>
+                    <p className={`text-3xl font-bold ${
+                      payment.status === 'completed' ? 'text-emerald-900' : 
+                      payment.status === 'partial' ? 'text-blue-900' : 'text-amber-900'
+                    }`}>
                       {formatAmount(payment.amount)}
                     </p>
+                    {payment.feeBalance && (
+                      <p className="text-sm mt-2 text-gray-600">
+                        Reste à payer : {formatAmount(payment.feeBalance.newRemaining)}
+                      </p>
+                    )}
                   </div>
                 </div>
 

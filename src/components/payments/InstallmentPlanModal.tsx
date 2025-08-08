@@ -173,6 +173,7 @@ export const InstallmentPlanModal: React.FC<InstallmentPlanModalProps> = ({
                 return (
                   <Card key={installment.id} className={`p-4 ${
                     actualStatus === 'paid' ? 'bg-emerald-50 border-emerald-200' :
+                    actualStatus === 'partial' ? 'bg-blue-50 border-blue-200' :
                     actualStatus === 'overdue' ? 'bg-red-50 border-red-200' :
                     'bg-white border-gray-200'
                   }`}>
@@ -191,10 +192,20 @@ export const InstallmentPlanModal: React.FC<InstallmentPlanModalProps> = ({
                                 Payé : {formatAmount(installment.paidAmount)}
                               </span>
                             )}
+                            {installment.remainingAmount > 0 && installment.paidAmount > 0 && (
+                              <span className="text-blue-600">
+                                Reste : {formatAmount(installment.remainingAmount)}
+                              </span>
+                            )}
                           </div>
                           {installment.paidDate && (
                             <p className="text-xs text-emerald-600 mt-1">
                               Payé le {new Date(installment.paidDate).toLocaleDateString('fr-FR')}
+                            </p>
+                          )}
+                          {installment.status === 'partial' && (
+                            <p className="text-xs text-blue-600 mt-1">
+                              Paiement partiel effectué
                             </p>
                           )}
                         </div>
@@ -209,17 +220,17 @@ export const InstallmentPlanModal: React.FC<InstallmentPlanModalProps> = ({
                         </div>
                         
                         <div className="flex space-x-1">
-                          {installment.status !== 'paid' && (
+                          {installment.remainingAmount > 0 && (
                             <Button 
                               size="sm"
                               onClick={() => handlePayInstallment(installment)}
                               className={actualStatus === 'overdue' ? 'bg-red-600 hover:bg-red-700' : ''}
                             >
                               <CreditCard className="w-4 h-4 mr-1" />
-                              Payer
+                              {installment.status === 'partial' ? 'Compléter' : 'Payer'}
                             </Button>
                           )}
-                          {installment.status === 'paid' && (
+                          {installment.paidAmount > 0 && (
                             <Button size="sm" variant="outline">
                               <Receipt className="w-4 h-4 mr-1" />
                               Reçu
@@ -241,6 +252,7 @@ export const InstallmentPlanModal: React.FC<InstallmentPlanModalProps> = ({
               <h4 className="font-medium text-blue-900 mb-2">Règles de gestion des échéanciers :</h4>
               <ul className="text-sm text-blue-800 space-y-1">
                 <li>• Les paiements partiels sont autorisés sur chaque échéance</li>
+                <li>• Le statut passe à "Terminé" uniquement quand le montant total est payé</li>
                 <li>• Les échéances en retard génèrent automatiquement des alertes</li>
                 <li>• Un reçu est généré pour chaque paiement d'échéance</li>
                 <li>• Les modifications d'échéancier nécessitent une validation administrative</li>

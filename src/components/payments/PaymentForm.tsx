@@ -14,38 +14,44 @@ interface PaymentFormProps {
 export const PaymentForm: React.FC<PaymentFormProps> = ({ 
   isOpen, 
   onClose, 
-  payment, 
+  student,
+  fee,
   onSave 
 }) => {
   const [formData, setFormData] = useState({
-    studentId: payment?.studentId || '',
-    paymentTypeId: payment?.paymentTypeId || '',
-    installmentId: payment?.installmentId || '',
-    amount: payment?.amount || '',
-    paymentMethodId: payment?.paymentMethodId || '',
-    reference: payment?.reference || '',
-    paidDate: payment?.paidDate?.split('T')[0] || new Date().toISOString().split('T')[0],
-    notes: payment?.notes || '',
+    studentId: student?.id || '',
+    feeId: fee?.id || '',
+    installmentId: '',
+    amount: '',
+    maxAmount: fee?.remainingAmount || 0,
+    paymentMethodId: '',
+    reference: '',
+    paidDate: new Date().toISOString().split('T')[0],
+    notes: '',
+    isPartialPayment: false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [availableInstallments, setAvailableInstallments] = useState<any[]>([]);
 
   if (!isOpen) return null;
 
-  // Données simulées
-  const students = [
-    { id: 'STU-001', name: 'Emma Martin', class: '6ème A' },
-    { id: 'STU-002', name: 'Lucas Dubois', class: '5ème B' },
-    { id: 'STU-003', name: 'Chloé Leroy', class: '4ème C' },
-  ];
-
-  const paymentTypes = [
-    { id: 'PT-001', name: 'Frais de scolarité', category: 'tuition', defaultAmount: 150000 },
-    { id: 'PT-002', name: 'Frais d\'inscription', category: 'registration', defaultAmount: 25000 },
-    { id: 'PT-003', name: 'Uniformes scolaires', category: 'uniform', defaultAmount: 45000 },
-    { id: 'PT-004', name: 'Fournitures scolaires', category: 'supplies', defaultAmount: 30000 },
-    { id: 'PT-005', name: 'Activités parascolaires', category: 'activities', defaultAmount: 20000 },
-  ];
+  // Simuler les échéances disponibles pour ce frais
+  React.useEffect(() => {
+    if (fee) {
+      const installments = fee.installments?.filter((inst: any) => inst.remainingAmount > 0) || [];
+      setAvailableInstallments(installments);
+      
+      // Si c'est un paiement global, définir le montant maximum
+      if (!formData.installmentId) {
+        setFormData(prev => ({ 
+          ...prev, 
+          maxAmount: fee.remainingAmount,
+          amount: fee.remainingAmount.toString()
+        }));
+      }
+    }
+  }, [fee]);
 
   const paymentMethods = [
     { id: 'PM-001', name: 'Espèces', code: 'cash', requiresReference: false },
@@ -63,16 +69,17 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.studentId) {
-      newErrors.studentId = 'L\'élève est obligatoire';
-    }
-
-    if (!formData.paymentTypeId) {
-      newErrors.paymentTypeId = 'Le type de paiement est obligatoire';
-    }
-
     if (!formData.amount || parseFloat(formData.amount) <= 0) {
       newErrors.amount = 'Le montant doit être supérieur à 0';
+    }
+
+    const paymentAmount = parseFloat(formData.amount);
+    const maxAmount = formData.installmentId 
+      ? availableInstallments.find(inst => inst.id === formData.installmentId)?.remainingAmount || 0
+      : formData.maxAmount;
+
+    if (paymentAmount > maxAmount) {
+      newErrors.amount = `Le montant ne peut pas dépasser ${formatAmount(maxAmount)}`;
     }
 
     if (!formData.paymentMethodId) {
@@ -100,15 +107,33 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
       return;
     }
 
+    const paymentAmount = parseFloat(formData.amount);
+    const selectedInstallment = formData.installmentId 
+      ? availableInstallments.find(inst => inst.id === formData.installmentId)
+      : null;
+
+    // Déterminer le statut du paiement
+    let paymentStatus = 'completed';
+    if (selectedInstallment) {
+      paymentStatus = paymentAmount < selectedInstallment.remainingAmount ? 'partial' : 'completed';
+    } else {
+      paymentStatus = paymentAmount < fee.remainingAmount ? 'partial' : 'completed';
+    }
+
     const paymentData = {
       ...formData,
-      id: payment?.id || `PAY-${Date.now()}`,
-      receiptNumber: payment?.receiptNumber || generateReceiptNumber(),
+      id: `PAY-${Date.now()}`,
+      receiptNumber: generateReceiptNumber(),
       amount: parseFloat(formData.amount),
-      status: 'pending', // Les paiements nécessitent une validation
+      status: paymentStatus,
       processedBy: 'current-user-id', // Dans un vrai système, ce serait l'utilisateur connecté
-      createdAt: payment?.createdAt || new Date().toISOString(),
+      createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      feeBalance: {
+        previousRemaining: fee.remainingAmount,
+        newRemaining: fee.remainingAmount - paymentAmount,
+        isFullyPaid: (fee.remainingAmount - paymentAmount) <= 0,
+      }
     };
 
     onSave(paymentData);
@@ -118,11 +143,22 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
-    // Auto-fill amount when payment type changes
-    if (field === 'paymentTypeId') {
-      const selectedType = paymentTypes.find(t => t.id === value);
-      if (selectedType && !formData.amount) {
-        setFormData(prev => ({ ...prev, amount: selectedType.defaultAmount.toString() }));
+    // Mettre à jour le montant maximum quand l'échéance change
+    if (field === 'installmentId') {
+      const selectedInstallment = availableInstallments.find(inst => inst.id === value);
+      if (selectedInstallment) {
+        setFormData(prev => ({ 
+          ...prev, 
+          maxAmount: selectedInstallment.remainingAmount,
+          amount: selectedInstallment.remainingAmount.toString()
+        }));
+      } else {
+        // Paiement global
+        setFormData(prev => ({ 
+          ...prev, 
+          maxAmount: fee.remainingAmount,
+          amount: fee.remainingAmount.toString()
+        }));
       }
     }
 
@@ -156,7 +192,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center">
               <Receipt className="w-5 h-5 mr-2" />
-              {payment ? 'Modifier le paiement' : 'Nouveau paiement'}
+              Nouveau paiement
             </CardTitle>
             <button
               onClick={onClose}
@@ -167,64 +203,110 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Élève */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Élève *
-                </label>
-                <select
-                  value={formData.studentId}
-                  onChange={(e) => handleInputChange('studentId', e.target.value)}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.studentId ? 'border-red-500' : ''
-                  }`}
-                  required
-                >
-                  <option value="">Sélectionner un élève</option>
-                  {students.map(student => (
-                    <option key={student.id} value={student.id}>
-                      {student.name} - {student.class}
-                    </option>
-                  ))}
-                </select>
-                {errors.studentId && <p className="text-sm text-red-600 mt-1">{errors.studentId}</p>}
+              {/* Informations de l'élève et du frais */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-medium text-gray-900 mb-2">Détails du paiement</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-600">Élève :</span>
+                    <span className="ml-2 font-medium">{student?.firstName} {student?.lastName}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Classe :</span>
+                    <span className="ml-2 font-medium">{student?.class}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Type de frais :</span>
+                    <span className="ml-2 font-medium">{fee?.name}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Montant total :</span>
+                    <span className="ml-2 font-medium">{formatAmount(fee?.totalAmount || 0)}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Déjà payé :</span>
+                    <span className="ml-2 font-medium text-emerald-600">{formatAmount(fee?.paidAmount || 0)}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Reste à payer :</span>
+                    <span className="ml-2 font-medium text-red-600">{formatAmount(fee?.remainingAmount || 0)}</span>
+                  </div>
+                </div>
               </div>
 
-              {/* Type de paiement */}
+              {/* Choix de l'échéance */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Type de paiement *
+                  Mode de paiement
                 </label>
+                <div className="space-y-2 mb-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="paymentMode"
+                      checked={!formData.installmentId}
+                      onChange={() => handleInputChange('installmentId', '')}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">Paiement global (montant libre)</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="paymentMode"
+                      checked={!!formData.installmentId}
+                      onChange={() => {
+                        if (availableInstallments.length > 0) {
+                          handleInputChange('installmentId', availableInstallments[0].id);
+                        }
+                      }}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">Paiement par échéance</span>
+                  </label>
+                </div>
+
+                {formData.installmentId && (
                 <select
-                  value={formData.paymentTypeId}
-                  onChange={(e) => handleInputChange('paymentTypeId', e.target.value)}
+                    value={formData.installmentId}
+                    onChange={(e) => handleInputChange('installmentId', e.target.value)}
                   className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.paymentTypeId ? 'border-red-500' : ''
+                      errors.installmentId ? 'border-red-500' : ''
                   }`}
-                  required
                 >
-                  <option value="">Sélectionner un type</option>
-                  {paymentTypes.map(type => (
-                    <option key={type.id} value={type.id}>
-                      {type.name} - {formatAmount(type.defaultAmount)}
+                    <option value="">Sélectionner une échéance</option>
+                    {availableInstallments.map(installment => (
+                      <option key={installment.id} value={installment.id}>
+                        {installment.description} - Reste: {formatAmount(installment.remainingAmount)}
                     </option>
                   ))}
                 </select>
-                {errors.paymentTypeId && <p className="text-sm text-red-600 mt-1">{errors.paymentTypeId}</p>}
+                )}
               </div>
 
               {/* Montant et Mode de paiement */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Montant (FCFA)"
-                  type="number"
-                  value={formData.amount}
-                  onChange={(e) => handleInputChange('amount', e.target.value)}
-                  min="0"
-                  step="1"
-                  error={errors.amount}
-                  required
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Montant à payer (FCFA) *
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.amount}
+                    onChange={(e) => handleInputChange('amount', e.target.value)}
+                    min="1"
+                    max={formData.maxAmount}
+                    step="1"
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      errors.amount ? 'border-red-500' : ''
+                    }`}
+                    required
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Maximum: {formatAmount(formData.maxAmount)}
+                  </p>
+                  {errors.amount && <p className="text-sm text-red-600 mt-1">{errors.amount}</p>}
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Mode de paiement *
@@ -294,7 +376,8 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
                     <p className="font-medium mb-1">Règles appliquées :</p>
                     <ul className="space-y-1">
                       <li>• Numéro de reçu généré automatiquement</li>
-                      <li>• Paiement en attente de validation par défaut</li>
+                      <li>• Paiements partiels autorisés</li>
+                      <li>• Statut "Terminé" uniquement si montant total payé</li>
                       <li>• Référence obligatoire selon le mode de paiement</li>
                       <li>• Historique conservé pour suivi et audit</li>
                     </ul>
@@ -312,7 +395,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
                   Annuler
                 </Button>
                 <Button type="submit">
-                  {payment ? 'Mettre à jour' : 'Enregistrer le paiement'}
+                  Enregistrer le paiement
                 </Button>
               </div>
             </form>
