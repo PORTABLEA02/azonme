@@ -41,6 +41,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSectio
         { id: 'rooms', label: 'Salles', icon: Building },
         { id: 'fee-structures', label: 'Barèmes', icon: CreditCard },
         { id: 'payments', label: 'Paiements', icon: CreditCard },
+        { id: 'payments-list', label: 'Liste des paiements', icon: CreditCard },
         { id: 'schedule', label: 'Emploi du temps', icon: Calendar },
         { id: 'analytics', label: 'Statistiques', icon: BarChart3 },
       ],

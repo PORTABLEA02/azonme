@@ -38,6 +38,8 @@ export const MainApp: React.FC = () => {
         return (
           user?.role === 'admin' ? <PaymentDashboard /> : <PaymentCollectionInterface />
         );
+      case 'payments-list':
+        return <PaymentsList />;
       case 'fee-structures':
         return <FeeStructureManager />;
       case 'schedule':
