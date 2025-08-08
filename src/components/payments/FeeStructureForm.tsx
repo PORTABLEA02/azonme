@@ -339,7 +339,7 @@ export const FeeStructureForm: React.FC<FeeStructureFormProps> = ({
 
                 <div className="space-y-4">
                   {formData.fees.map((fee, index) => (
-                    <Card key={index} className="p-4 bg-gray-50">
+                    <Card key={fee.id || `fee-${index}`} className="p-4 bg-gray-50">
                       <div className="flex justify-between items-start mb-4">
                         <h4 className="font-medium">Frais #{index + 1}</h4>
                         {formData.fees.length > 1 && (
@@ -461,7 +461,7 @@ export const FeeStructureForm: React.FC<FeeStructureFormProps> = ({
                 {formData.discounts.length > 0 && (
                   <div className="space-y-4">
                     {formData.discounts.map((discount, index) => (
-                      <Card key={index} className="p-4 bg-emerald-50">
+                      <Card key={discount.id || `discount-${index}`} className="p-4 bg-emerald-50">
                         <div className="flex justify-between items-start mb-4">
                           <h4 className="font-medium">Réduction #{index + 1}</h4>
                           <button

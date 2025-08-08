@@ -102,17 +102,8 @@ export const CourseAssignmentForm: React.FC<CourseAssignmentFormProps> = ({
     }
 
     // Vérification de la durée maximale (2 heures)
-    if (formData.startTime && formData.endTime) {
-      const start = new Date(`2000-01-01T${formData.startTime}:00`);
-      const end = new Date(`2000-01-01T${formData.endTime}:00`);
-      const durationMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
-      
-      if (durationMinutes > 120) {
-        newErrors.endTime = 'La durée d\'un cours ne peut pas dépasser 2 heures';
-      }
-      
-      // Mettre à jour la durée calculée
-      setFormData(prev => ({ ...prev, duration: durationMinutes }));
+    if (formData.duration > 120) {
+      newErrors.endTime = 'La durée d\'un cours ne peut pas dépasser 2 heures';
     }
 
     // Vérification que l'enseignant peut enseigner cette matière
@@ -145,6 +136,22 @@ export const CourseAssignmentForm: React.FC<CourseAssignmentFormProps> = ({
 
   const handleInputChange = (field: string, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Calculer la durée automatiquement quand les heures changent
+    if (field === 'startTime' || field === 'endTime') {
+      const startTime = field === 'startTime' ? value as string : formData.startTime;
+      const endTime = field === 'endTime' ? value as string : formData.endTime;
+      
+      if (startTime && endTime) {
+        const start = new Date(`2000-01-01T${startTime}:00`);
+        const end = new Date(`2000-01-01T${endTime}:00`);
+        const durationMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
+        
+        if (durationMinutes > 0) {
+          setFormData(prev => ({ ...prev, duration: durationMinutes }));
+        }
+      }
+    }
     
     // Auto-fill related fields
     if (field === 'subjectId') {

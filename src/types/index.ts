@@ -83,17 +83,6 @@ export interface Grade {
 
 export interface Payment {
   id: string;
-  studentId: string;
-  amount: number;
-  type: 'tuition' | 'supplies' | 'transport' | 'meals';
-  status: 'paid' | 'pending' | 'overdue';
-  dueDate: string;
-  paidDate?: string;
-  method?: 'cash' | 'transfer' | 'check';
-}
-
-export interface Message {
-  id: string;
   senderId: string;
   recipientId: string;
   subject: string;
