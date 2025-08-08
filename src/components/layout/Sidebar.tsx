@@ -39,6 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSectio
         { id: 'classes', label: 'Classes', icon: GraduationCap },
         { id: 'grades', label: 'Notes', icon: ClipboardList },
         { id: 'rooms', label: 'Salles', icon: Building },
+        { id: 'fee-structures', label: 'Barèmes', icon: CreditCard },
         { id: 'payments', label: 'Paiements', icon: CreditCard },
         { id: 'schedule', label: 'Emploi du temps', icon: Calendar },
         { id: 'analytics', label: 'Statistiques', icon: BarChart3 },
@@ -52,7 +53,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSectio
       student: [
         { id: 'grades', label: 'Mes Notes', icon: ClipboardList },
         { id: 'schedule', label: 'Emploi du temps', icon: Calendar },
-        { id: 'payments', label: 'Paiements', icon: CreditCard },
+        { id: 'payments', label: 'Mes Paiements', icon: CreditCard },
       ],
       parent: [
         { id: 'students', label: 'Mes Enfants', icon: UserCheck },
