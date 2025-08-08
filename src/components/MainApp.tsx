@@ -11,9 +11,6 @@ import { RoomsList } from './rooms/RoomsList';
 import { ScheduleManager } from './schedule/ScheduleManager';
 import { PaymentsList } from './payments/PaymentsList';
 import { PaymentDashboard } from './payments/PaymentDashboard';
-import { FeeStructureManager } from './fees/FeeStructureManager';
-import { FinancialReports } from './reports/FinancialReports';
-import { ParentPaymentView } from './parents/ParentPaymentView';
 
 export const MainApp: React.FC = () => {
   const { user } = useAuth();
@@ -37,13 +34,8 @@ export const MainApp: React.FC = () => {
         return <RoomsList />;
       case 'payments':
         return (
-          user?.role === 'admin' ? <PaymentDashboard /> : 
-          user?.role === 'parent' ? <ParentPaymentView /> : <PaymentsList />
+          user?.role === 'admin' ? <PaymentDashboard /> : <PaymentsList />
         );
-      case 'fees':
-        return <FeeStructureManager />;
-      case 'reports':
-        return <FinancialReports />;
       case 'schedule':
         return (
           <ScheduleManager />
