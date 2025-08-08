@@ -18,6 +18,8 @@ import {
   Plus,
   Eye,
   FileText,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 export const PaymentCollectionInterface: React.FC = () => {
@@ -26,6 +28,8 @@ export const PaymentCollectionInterface: React.FC = () => {
   const [isPaymentFormOpen, setIsPaymentFormOpen] = useState(false);
   const [isInstallmentModalOpen, setIsInstallmentModalOpen] = useState(false);
   const [selectedFee, setSelectedFee] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   // Données simulées des élèves avec leurs frais
   const studentsWithFees = [
@@ -174,6 +178,28 @@ export const PaymentCollectionInterface: React.FC = () => {
     student.class.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentStudents = filteredStudents.slice(startIndex, endIndex);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
@@ -233,12 +259,23 @@ export const PaymentCollectionInterface: React.FC = () => {
     setIsPaymentFormOpen(true);
   };
 
+  const handleGlobalPayment = (student: any) => {
+    setSelectedStudent(student);
+    setSelectedFee(null);
+    setIsPaymentFormOpen(true);
+  };
+
+  const getTotalOverdue = (student: any) => {
+    return student.fees.reduce((sum: number, fee: any) => {
+      return sum + (fee.isOverdue ? fee.remainingAmount : 0);
+    }, 0);
+  };
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Interface d'encaissement</h1>
-          <p className="text-gray-600 mt-1">Sélectionner un élève pour voir ses frais et enregistrer les paiements</p>
+          <p className="text-gray-600 mt-1">Liste des élèves avec leurs frais et options de paiement</p>
         </div>
       </div>
 
@@ -257,193 +294,192 @@ export const PaymentCollectionInterface: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Students List */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filteredStudents.map((student) => (
-          <Card key={student.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              {/* Student Header */}
-              <div className="flex items-center space-x-4 mb-6">
-                <Avatar 
-                  src={student.avatar} 
-                  name={`${student.firstName} ${student.lastName}`} 
-                  size="lg"
-                />
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900 text-lg">
-                    {student.firstName} {student.lastName}
-                  </h3>
-                  <p className="text-gray-600">{student.class}</p>
-                  <p className="text-xs text-gray-500">ID: {student.id}</p>
-                </div>
-              </div>
-
-              {/* Financial Summary */}
-              <div className="grid grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
-                <div className="text-center">
-                  <p className="text-xs text-gray-600">Total dû</p>
-                  <p className="font-bold text-gray-900">{formatAmount(student.totalDue)}</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xs text-gray-600">Payé</p>
-                  <p className="font-bold text-emerald-600">{formatAmount(student.totalPaid)}</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xs text-gray-600">Restant</p>
-                  <p className={`font-bold ${student.totalOverdue > 0 ? 'text-red-600' : 'text-gray-900'}`}>
-                    {formatAmount(student.totalDue - student.totalPaid)}
-                  </p>
-                </div>
-              </div>
-
-              {/* Discounts Applied */}
-              {student.discounts.length > 0 && (
-                <div className="mb-4 p-3 bg-emerald-50 rounded-lg">
-                  <p className="text-sm font-medium text-emerald-900 mb-1">Réductions appliquées :</p>
-                  {student.discounts.map((discount) => (
-                    <div key={discount.id} className="text-xs text-emerald-700">
-                      • {discount.name} : {discount.type === 'percentage' ? `${discount.value}%` : formatAmount(discount.value)}
-                      {discount.appliedAmount > 0 && ` (${formatAmount(discount.appliedAmount)} économisés)`}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Fees List */}
-              <div className="space-y-3">
-                <h4 className="font-medium text-gray-900">Frais à payer ({student.fees.length})</h4>
-                {student.fees.map((fee) => (
-                  <div key={fee.id} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-medium text-gray-900">{fee.name}</span>
-                        {getStatusIcon(fee.status)}
-                        <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(fee.status)}`}>
-                          {getStatusLabel(fee.status)}
-                        </span>
-                        {fee.isOverdue && (
-                          <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">
-                            En retard
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 text-sm mb-3">
-                      <div>
-                        <span className="text-gray-600">Montant total :</span>
-                        <span className="ml-2 font-medium">{formatAmount(fee.totalAmount)}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Payé :</span>
-                        <span className="ml-2 font-medium text-emerald-600">{formatAmount(fee.paidAmount)}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Restant :</span>
-                        <span className="ml-2 font-medium text-red-600">{formatAmount(fee.remainingAmount)}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Échéance :</span>
-                        <span className="ml-2 font-medium">
-                          {new Date(fee.dueDate).toLocaleDateString('fr-FR')}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Installments */}
-                    {fee.installments.length > 1 && (
-                      <div className="mb-3">
-                        <p className="text-xs font-medium text-gray-700 mb-2">
-                          Échéancier ({fee.installments.length} tranches) :
-                        </p>
-                        <div className="space-y-1">
-                          {fee.installments.map((installment) => (
-                            <div key={installment.id} className="flex justify-between items-center text-xs">
-                              <span className="text-gray-600">{installment.description}</span>
-                              <div className="flex items-center space-x-2">
-                                <span className="font-medium">{formatAmount(installment.amount)}</span>
-                                {installment.status === 'paid' ? (
-                                  <CheckCircle className="w-3 h-3 text-emerald-600" />
-                                ) : (
-                                  <Clock className="w-3 h-3 text-amber-600" />
-                                )}
-                              </div>
-                            </div>
-                          ))}
+      {/* Students Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            Liste des élèves ({filteredStudents.length})
+            {searchTerm && ` - Résultats pour "${searchTerm}"`}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left p-4 font-medium text-gray-600">Élève</th>
+                  <th className="text-left p-4 font-medium text-gray-600">Classe</th>
+                  <th className="text-left p-4 font-medium text-gray-600">Total dû</th>
+                  <th className="text-left p-4 font-medium text-gray-600">Payé</th>
+                  <th className="text-left p-4 font-medium text-gray-600">Restant</th>
+                  <th className="text-left p-4 font-medium text-gray-600">En retard</th>
+                  <th className="text-left p-4 font-medium text-gray-600">Statut</th>
+                  <th className="text-left p-4 font-medium text-gray-600">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentStudents.map((student) => {
+                  const totalOverdue = getTotalOverdue(student);
+                  const remainingAmount = student.totalDue - student.totalPaid;
+                  const hasOverdue = totalOverdue > 0;
+                  
+                  return (
+                    <tr key={student.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="p-4">
+                        <div className="flex items-center space-x-3">
+                          <Avatar 
+                            src={student.avatar} 
+                            name={`${student.firstName} ${student.lastName}`} 
+                            size="sm"
+                          />
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {student.firstName} {student.lastName}
+                            </p>
+                            <p className="text-xs text-gray-500">ID: {student.id}</p>
+                          </div>
                         </div>
-                      </div>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex flex-wrap gap-2">
-                      {fee.remainingAmount > 0 && (
-                        <>
-                          <Button 
-                            size="sm" 
-                            onClick={() => handleQuickPayment(fee, student)}
-                            className="flex-1 min-w-0"
-                          >
-                            <CreditCard className="w-4 h-4 mr-1" />
-                            Paiement
-                          </Button>
-                          {fee.installments.length > 1 && (
+                      </td>
+                      <td className="p-4">
+                        <span className="font-medium text-gray-900">{student.class}</span>
+                      </td>
+                      <td className="p-4">
+                        <span className="font-bold text-gray-900">
+                          {formatAmount(student.totalDue)}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <span className="font-bold text-emerald-600">
+                          {formatAmount(student.totalPaid)}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <span className={`font-bold ${remainingAmount > 0 ? 'text-red-600' : 'text-gray-900'}`}>
+                          {formatAmount(remainingAmount)}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        {hasOverdue ? (
+                          <span className="font-bold text-red-600">
+                            {formatAmount(totalOverdue)}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center space-x-2">
+                          {hasOverdue && (
+                            <AlertTriangle className="w-4 h-4 text-red-600" />
+                          )}
+                          <span className={`px-2 py-1 text-xs rounded-full font-medium ${
+                            hasOverdue ? 'bg-red-100 text-red-800' :
+                            remainingAmount > 0 ? 'bg-amber-100 text-amber-800' :
+                            'bg-emerald-100 text-emerald-800'
+                          }`}>
+                            {hasOverdue ? 'En retard' :
+                             remainingAmount > 0 ? 'Partiel' : 'À jour'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex space-x-2">
+                          {remainingAmount > 0 && (
                             <Button 
-                              size="sm" 
-                              variant="outline"
-                              onClick={() => handleInstallmentPlan(fee, student)}
+                              size="sm"
+                              onClick={() => handleGlobalPayment(student)}
+                              className={hasOverdue ? 'bg-red-600 hover:bg-red-700' : ''}
                             >
-                              <Calendar className="w-4 h-4 mr-1" />
-                              Échéancier
+                              <CreditCard className="w-4 h-4 mr-1" />
+                              Payer
                             </Button>
                           )}
-                        </>
-                      )}
-                      <Button size="sm" variant="outline">
-                        <Eye className="w-4 h-4 mr-1" />
-                        Détails
-                      </Button>
-                      {fee.status === 'paid' && (
-                        <Button size="sm" variant="outline">
-                          <Receipt className="w-4 h-4 mr-1" />
-                          Reçu
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => {
+                              // Open detailed view - could be a modal or navigate to detail page
+                              console.log('View details for student:', student.id);
+                            }}
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            Détails
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <FileText className="w-4 h-4 mr-1" />
+                            Relevé
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
 
-              {/* Quick Actions */}
-              <div className="flex justify-between items-center pt-4 border-t border-gray-100 mt-4">
-                <span className="text-sm text-gray-600">
-                  {student.totalOverdue > 0 ? 'Paiements en retard' : 'Situation à jour'}
-                </span>
-                <div className="flex space-x-2">
-                  <Button size="sm" variant="outline">
-                    <FileText className="w-4 h-4 mr-1" />
-                    Relevé
-                  </Button>
-                  {student.totalDue - student.totalPaid > 0 && (
-                    <Button 
-                      size="sm"
-                      onClick={() => {
-                        setSelectedStudent(student);
-                        setSelectedFee(null);
-                        setIsPaymentFormOpen(true);
-                      }}
-                    >
-                      <Plus className="w-4 h-4 mr-1" />
-                      Paiement global
-                    </Button>
-                  )}
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+              <div className="text-sm text-gray-600">
+                Affichage de {startIndex + 1} à {Math.min(endIndex, filteredStudents.length)} sur {filteredStudents.length} élèves
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={goToPreviousPage}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Précédent
+                </Button>
+                
+                <div className="flex space-x-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNumber;
+                    if (totalPages <= 5) {
+                      pageNumber = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNumber = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNumber = totalPages - 4 + i;
+                    } else {
+                      pageNumber = currentPage - 2 + i;
+                    }
+                    
+                    return (
+                      <button
+                        key={pageNumber}
+                        onClick={() => goToPage(pageNumber)}
+                        className={`px-3 py-1 text-sm rounded ${
+                          currentPage === pageNumber
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {pageNumber}
+                      </button>
+                    );
+                  })}
                 </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={goToNextPage}
+                  disabled={currentPage === totalPages}
+                >
+                  Suivant
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-      {filteredStudents.length === 0 && (
+      {currentStudents.length === 0 && (
         <Card>
           <CardContent className="p-8 md:p-12 text-center">
             <div className="text-gray-400 mb-4">
