@@ -35,7 +35,8 @@ export const MainApp: React.FC = () => {
         return <RoomsList />;
       case 'payments':
         return (
-          user?.role === 'admin' ? <PaymentDashboard /> : <PaymentCollectionInterface />
+          user?.role === 'admin' ? <PaymentDashboard /> : 
+          user?.role === 'teacher' ? <PaymentCollectionInterface /> : <PaymentCollectionInterface />
         );
       case 'payments-list':
         return <PaymentsList />;

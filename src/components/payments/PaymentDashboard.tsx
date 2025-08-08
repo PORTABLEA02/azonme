@@ -26,6 +26,9 @@ export const PaymentDashboard: React.FC = () => {
     totalCollected: 4250000,
     totalPending: 890000,
     totalOverdue: 320000,
+    totalInstallments: 156,
+    completedInstallments: 89,
+    partialInstallments: 23,
     totalRefunds: 45000,
     collectionRate: 87.5,
     overdueCount: 12,
@@ -210,13 +213,13 @@ export const PaymentDashboard: React.FC = () => {
           <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs md:text-sm font-medium text-gray-600">Taux de recouvrement</p>
-                <p className="text-lg md:text-xl font-bold text-blue-600">
-                  {dashboardStats.collectionRate}%
+                <p className="text-xs md:text-sm font-medium text-gray-600">Échéances terminées</p>
+                <p className="text-lg md:text-xl font-bold text-emerald-600">
+                  {dashboardStats.completedInstallments}
                 </p>
-                <p className="text-xs text-blue-600 mt-1">Objectif: 90%</p>
+                <p className="text-xs text-emerald-600 mt-1">sur {dashboardStats.totalInstallments}</p>
               </div>
-              <BarChart3 className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
+              <CheckCircle className="w-6 h-6 md:w-8 md:h-8 text-emerald-600" />
             </div>
           </CardContent>
         </Card>
@@ -385,6 +388,8 @@ export const PaymentDashboard: React.FC = () => {
             <div>
               <h4 className="font-medium text-gray-900 mb-3">Alertes automatiques</h4>
               <ul className="text-sm text-gray-700 space-y-2">
+                <li>• <strong>Échelonnement automatique :</strong> Calcul en temps réel des soldes restants</li>
+                <li>• <strong>Paiements partiels :</strong> Autorisés sur chaque échéance avec mise à jour des statuts</li>
                 <li>• Rappel 7 jours avant échéance</li>
                 <li>• Alerte immédiate en cas de retard</li>
                 <li>• Notification aux parents par SMS/email</li>
@@ -394,6 +399,8 @@ export const PaymentDashboard: React.FC = () => {
             <div>
               <h4 className="font-medium text-gray-900 mb-3">Restrictions automatiques</h4>
               <ul className="text-sm text-gray-700 space-y-2">
+                <li>• <strong>Statut "En cours" :</strong> Tant qu'il reste un solde à payer</li>
+                <li>• <strong>Statut "Terminé" :</strong> Quand le montant total est payé</li>
                 <li>• Blocage d'accès au bulletin après 30 jours</li>
                 <li>• Refus d'inscription aux examens</li>
                 <li>• Suspension des activités parascolaires</li>
