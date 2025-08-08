@@ -14,6 +14,7 @@ import {
   ClipboardList,
   BarChart3,
   UserCheck,
+  Building,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -37,6 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSectio
         { id: 'teachers', label: 'Enseignants', icon: BookOpen },
         { id: 'classes', label: 'Classes', icon: GraduationCap },
         { id: 'grades', label: 'Notes', icon: ClipboardList },
+        { id: 'rooms', label: 'Salles', icon: Building },
         { id: 'payments', label: 'Paiements', icon: CreditCard },
         { id: 'schedule', label: 'Emploi du temps', icon: Calendar },
         { id: 'analytics', label: 'Statistiques', icon: BarChart3 },

@@ -7,6 +7,7 @@ import { StudentsList } from './students/StudentsList';
 import { GradesList } from './grades/GradesList';
 import { TeachersList } from './teachers/TeachersList';
 import { ClassesList } from './classes/ClassesList';
+import { RoomsList } from './rooms/RoomsList';
 
 export const MainApp: React.FC = () => {
   const { user } = useAuth();
@@ -26,6 +27,8 @@ export const MainApp: React.FC = () => {
         return (
           <ClassesList />
         );
+      case 'rooms':
+        return <RoomsList />;
       case 'payments':
         return (
           <div className="p-8 text-center">

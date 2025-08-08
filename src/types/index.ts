@@ -112,3 +112,50 @@ export interface DashboardStats {
   upcomingPayments: Payment[];
   recentMessages: Message[];
 }
+
+export interface Room {
+  id: string;
+  name: string;
+  capacity: number;
+  type: 'classroom' | 'laboratory' | 'computer_room' | 'multipurpose' | 'conference' | 'library';
+  building?: string;
+  floor?: string;
+  equipment: string[];
+  status: 'available' | 'maintenance' | 'reserved';
+  maintenanceInfo?: {
+    reason: string;
+    startDate: string;
+    endDate: string;
+    description?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RoomReservation {
+  id: string;
+  roomId: string;
+  classId?: string;
+  teacherId?: string;
+  title: string;
+  description?: string;
+  startTime: string;
+  endTime: string;
+  date: string;
+  type: 'class' | 'meeting' | 'exam' | 'conference' | 'maintenance';
+  status: 'confirmed' | 'pending' | 'cancelled';
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RoomUsageHistory {
+  id: string;
+  roomId: string;
+  reservationId: string;
+  actualStartTime: string;
+  actualEndTime: string;
+  attendeesCount?: number;
+  notes?: string;
+  createdAt: string;
+}
