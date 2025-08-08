@@ -28,7 +28,7 @@ export interface PaymentSchedule {
   remainingAmount: number;
   status: 'en_cours' | 'termine';
   installments: PaymentInstallment[];
-  schoolYear: string;
+  schoolYearId: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -74,6 +74,7 @@ export interface Payment {
   attachments?: string[];
   createdAt: string;
   updatedAt: string;
+  schoolYearId: string; // Lien vers l'année scolaire du paiement
 }
 
 export interface StudentFeeBalance {

@@ -22,7 +22,7 @@ export interface CourseAssignment {
   startTime: string;
   endTime: string;
   duration: number; // en minutes
-  schoolYear: string;
+  schoolYearId: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -32,7 +32,7 @@ export interface Schedule {
   type: 'class' | 'teacher' | 'room';
   entityId: string; // ID de la classe, enseignant ou salle
   entityName: string;
-  schoolYear: string;
+  schoolYearId: string;
   assignments: CourseAssignment[];
   createdAt: string;
   updatedAt: string;
@@ -48,7 +48,7 @@ export interface ScheduleConflict {
 export interface SchoolSettings {
   workingDays: string[];
   timeSlots: TimeSlot[];
-  schoolYear: string;
+  schoolYearId: string;
   breakTimes: {
     morning?: TimeSlot;
     lunch?: TimeSlot;

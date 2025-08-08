@@ -14,7 +14,6 @@ export interface Student {
   email: string;
   phone?: string;
   dateOfBirth: string;
-  classId: string;
   parentId?: string;
   enrollmentDate: string;
   status: 'active' | 'inactive';
@@ -55,6 +54,7 @@ export interface ClassTeacher {
   classId: string;
   teacherId: string;
   subjectId: string;
+  schoolYearId: string;
   assignedAt: string;
 }
 
@@ -79,6 +79,9 @@ export interface Grade {
   date: string;
   type: 'exam' | 'homework' | 'participation';
   comment?: string;
+  schoolYearId: string; // Lien vers l'année scolaire
+  termId?: string; // Lien vers la période (semestre/trimestre)
+  isFinalized: boolean; // Indique si la note est figée (après clôture)
 }
 
 export interface Payment {
@@ -100,6 +103,12 @@ export interface DashboardStats {
   recentGrades: Grade[];
   upcomingPayments: Payment[];
   recentMessages: Message[];
+  currentSchoolYear?: SchoolYear;
+  academicProgress?: {
+    totalEnrolled: number;
+    averageGrade: number;
+    promotionRate: number;
+  };
 }
 
 export interface Room {
