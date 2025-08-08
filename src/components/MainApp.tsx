@@ -9,6 +9,8 @@ import { TeachersList } from './teachers/TeachersList';
 import { ClassesList } from './classes/ClassesList';
 import { RoomsList } from './rooms/RoomsList';
 import { ScheduleManager } from './schedule/ScheduleManager';
+import { PaymentsList } from './payments/PaymentsList';
+import { PaymentDashboard } from './payments/PaymentDashboard';
 
 export const MainApp: React.FC = () => {
   const { user } = useAuth();
@@ -32,10 +34,7 @@ export const MainApp: React.FC = () => {
         return <RoomsList />;
       case 'payments':
         return (
-          <div className="p-8 text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Gestion des paiements</h2>
-            <p className="text-gray-600">Cette section sera développée prochainement.</p>
-          </div>
+          user?.role === 'admin' ? <PaymentDashboard /> : <PaymentsList />
         );
       case 'schedule':
         return (
