@@ -117,63 +117,63 @@ export const GradesList: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gestion des notes</h1>
           <p className="text-gray-600 mt-1">Saisir et consulter les évaluations</p>
         </div>
-        <Button>
+        <Button className="w-full sm:w-auto">
           <Plus className="w-4 h-4 mr-2" />
           Nouvelle note
         </Button>
       </div>
 
       {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Moyenne générale</p>
-                <p className="text-2xl font-bold text-gray-900">{averageGrade.toFixed(1)}/20</p>
+                <p className="text-xs md:text-sm font-medium text-gray-600">Moyenne générale</p>
+                <p className="text-xl md:text-2xl font-bold text-gray-900">{averageGrade.toFixed(1)}/20</p>
               </div>
-              <BarChart3 className="w-8 h-8 text-blue-600" />
+              <BarChart3 className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Excellentes notes</p>
-                <p className="text-2xl font-bold text-emerald-600">{excellentCount}</p>
+                <p className="text-xs md:text-sm font-medium text-gray-600">Excellentes notes</p>
+                <p className="text-xl md:text-2xl font-bold text-emerald-600">{excellentCount}</p>
               </div>
-              <TrendingUp className="w-8 h-8 text-emerald-600" />
+              <TrendingUp className="w-6 h-6 md:w-8 md:h-8 text-emerald-600" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">À améliorer</p>
-                <p className="text-2xl font-bold text-red-600">{needsImprovementCount}</p>
+                <p className="text-xs md:text-sm font-medium text-gray-600">À améliorer</p>
+                <p className="text-xl md:text-2xl font-bold text-red-600">{needsImprovementCount}</p>
               </div>
-              <TrendingDown className="w-8 h-8 text-red-600" />
+              <TrendingDown className="w-6 h-6 md:w-8 md:h-8 text-red-600" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total notes</p>
-                <p className="text-2xl font-bold text-gray-900">{filteredGrades.length}</p>
+                <p className="text-xs md:text-sm font-medium text-gray-600">Total notes</p>
+                <p className="text-xl md:text-2xl font-bold text-gray-900">{filteredGrades.length}</p>
               </div>
-              <BarChart3 className="w-8 h-8 text-purple-600" />
+              <BarChart3 className="w-6 h-6 md:w-8 md:h-8 text-purple-600" />
             </div>
           </CardContent>
         </Card>
@@ -181,7 +181,7 @@ export const GradesList: React.FC = () => {
 
       {/* Filters */}
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="p-4 md:p-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex gap-4">
               <select
@@ -203,7 +203,7 @@ export const GradesList: React.FC = () => {
                 ))}
               </select>
             </div>
-            <Button variant="outline">
+            <Button variant="outline" className="w-full sm:w-auto">
               <Filter className="w-4 h-4 mr-2" />
               Plus de filtres
             </Button>
@@ -217,35 +217,35 @@ export const GradesList: React.FC = () => {
           <CardTitle>Notes récentes</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto -mx-4 md:mx-0">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left p-4 font-medium text-gray-600">Élève</th>
-                  <th className="text-left p-4 font-medium text-gray-600">Matière</th>
-                  <th className="text-left p-4 font-medium text-gray-600">Note</th>
-                  <th className="text-left p-4 font-medium text-gray-600">Type</th>
-                  <th className="text-left p-4 font-medium text-gray-600">Date</th>
-                  <th className="text-left p-4 font-medium text-gray-600">Enseignant</th>
-                  <th className="text-left p-4 font-medium text-gray-600">Commentaire</th>
+                  <th className="text-left p-2 md:p-4 font-medium text-gray-600 text-xs md:text-sm">Élève</th>
+                  <th className="text-left p-2 md:p-4 font-medium text-gray-600 text-xs md:text-sm">Matière</th>
+                  <th className="text-left p-2 md:p-4 font-medium text-gray-600 text-xs md:text-sm">Note</th>
+                  <th className="text-left p-2 md:p-4 font-medium text-gray-600 text-xs md:text-sm hidden sm:table-cell">Type</th>
+                  <th className="text-left p-2 md:p-4 font-medium text-gray-600 text-xs md:text-sm hidden md:table-cell">Date</th>
+                  <th className="text-left p-2 md:p-4 font-medium text-gray-600 text-xs md:text-sm hidden lg:table-cell">Enseignant</th>
+                  <th className="text-left p-2 md:p-4 font-medium text-gray-600 text-xs md:text-sm hidden xl:table-cell">Commentaire</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredGrades.map((grade) => (
                   <tr key={grade.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="p-4">
+                    <td className="p-2 md:p-4">
                       <div className="flex items-center space-x-3">
-                        <Avatar src={grade.student.avatar} name={grade.student.name} size="sm" />
+                        <Avatar src={grade.student.avatar} name={grade.student.name} size="sm" className="hidden sm:block" />
                         <div>
-                          <p className="font-medium text-gray-900">{grade.student.name}</p>
-                          <p className="text-sm text-gray-600">{grade.class}</p>
+                          <p className="font-medium text-gray-900 text-sm md:text-base">{grade.student.name}</p>
+                          <p className="text-xs md:text-sm text-gray-600">{grade.class}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="p-4">
-                      <span className="font-medium text-gray-900">{grade.subject}</span>
+                    <td className="p-2 md:p-4">
+                      <span className="font-medium text-gray-900 text-sm md:text-base">{grade.subject}</span>
                     </td>
-                    <td className="p-4">
+                    <td className="p-2 md:p-4">
                       <div className="flex items-center space-x-2">
                         <span className={`px-2 py-1 rounded-full text-sm font-medium ${getGradeColor(grade.grade, grade.maxGrade)}`}>
                           {grade.grade}/{grade.maxGrade}
@@ -253,19 +253,19 @@ export const GradesList: React.FC = () => {
                         {getGradeTrend(grade.grade, grade.maxGrade)}
                       </div>
                     </td>
-                    <td className="p-4">
+                    <td className="p-2 md:p-4 hidden sm:table-cell">
                       <span className="text-sm text-gray-600">{getTypeLabel(grade.type)}</span>
                     </td>
-                    <td className="p-4">
+                    <td className="p-2 md:p-4 hidden md:table-cell">
                       <span className="text-sm text-gray-600">
                         {new Date(grade.date).toLocaleDateString('fr-FR')}
                       </span>
                     </td>
-                    <td className="p-4">
+                    <td className="p-2 md:p-4 hidden lg:table-cell">
                       <span className="text-sm text-gray-600">{grade.teacher}</span>
                     </td>
-                    <td className="p-4">
-                      <span className="text-sm text-gray-600">{grade.comment}</span>
+                    <td className="p-2 md:p-4 hidden xl:table-cell">
+                      <span className="text-sm text-gray-600 truncate max-w-xs">{grade.comment}</span>
                     </td>
                   </tr>
                 ))}

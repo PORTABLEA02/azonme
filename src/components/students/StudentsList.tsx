@@ -97,12 +97,12 @@ export const StudentsList: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gestion des élèves</h1>
           <p className="text-gray-600 mt-1">Gérer les profils et informations des élèves</p>
         </div>
-        <Button>
+        <Button className="w-full sm:w-auto">
           <Plus className="w-4 h-4 mr-2" />
           Nouvel élève
         </Button>
@@ -110,7 +110,7 @@ export const StudentsList: React.FC = () => {
 
       {/* Filters */}
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="p-4 md:p-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <Input
@@ -130,7 +130,7 @@ export const StudentsList: React.FC = () => {
                   <option key={cls.id} value={cls.id}>{cls.name}</option>
                 ))}
               </select>
-              <Button variant="outline">
+              <Button variant="outline" className="w-full sm:w-auto">
                 <Filter className="w-4 h-4 mr-2" />
                 Filtres
               </Button>
@@ -140,10 +140,10 @@ export const StudentsList: React.FC = () => {
       </Card>
 
       {/* Students Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {filteredStudents.map((student) => (
           <Card key={student.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <Avatar 
@@ -165,7 +165,7 @@ export const StudentsList: React.FC = () => {
               </div>
 
               <div className="space-y-2 mb-4">
-                <div className="flex items-center text-sm text-gray-600">
+                <div className="flex items-center text-sm text-gray-600 break-all">
                   <Mail className="w-4 h-4 mr-2" />
                   {student.email}
                 </div>
@@ -179,7 +179,7 @@ export const StudentsList: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-4 border-t border-gray-100 space-y-2 sm:space-y-0">
                 <span className={`px-2 py-1 text-xs rounded-full ${
                   student.status === 'active' 
                     ? 'bg-emerald-100 text-emerald-800' 
@@ -203,7 +203,7 @@ export const StudentsList: React.FC = () => {
 
       {filteredStudents.length === 0 && (
         <Card>
-          <CardContent className="p-12 text-center">
+          <CardContent className="p-8 md:p-12 text-center">
             <div className="text-gray-400 mb-4">
               <Search className="w-12 h-12 mx-auto" />
             </div>

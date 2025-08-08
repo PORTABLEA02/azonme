@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Avatar } from '../ui/Avatar';
 import {
@@ -23,6 +23,7 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection }) => {
   const { user, logout } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const getMenuItems = () => {
     const commonItems = [
@@ -68,7 +69,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSectio
   const menuItems = getMenuItems();
 
   return (
-    <div className="bg-white w-64 h-full shadow-sm border-r border-gray-100 flex flex-col">
+    <>
+      {/* Mobile menu button */}
+      <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md border border-gray-200"
+      >
+        <div className="w-6 h-6 flex flex-col justify-center space-y-1">
+          <div className={`h-0.5 bg-gray-600 transition-all ${isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></div>
+          <div className={`h-0.5 bg-gray-600 transition-all ${isMobileMenuOpen ? 'opacity-0' : ''}`}></div>
+          <div className={`h-0.5 bg-gray-600 transition-all ${isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></div>
+        </div>
+      </button>
+
+      {/* Mobile overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`bg-white w-64 h-full shadow-sm border-r border-gray-100 flex flex-col fixed lg:relative z-40 transition-transform duration-300 ${
+        isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      }`}>
       {/* Header */}
       <div className="p-6 border-b border-gray-100">
         <div className="flex items-center space-x-3">
@@ -98,7 +123,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSectio
       </div>
 
       {/* Navigation */}
-      <div className="flex-1 p-4 space-y-1">
+      <div className="flex-1 p-4 space-y-1 overflow-y-auto">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeSection === item.id;
@@ -106,7 +131,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSectio
           return (
             <button
               key={item.id}
-              onClick={() => setActiveSection(item.id)}
+              onClick={() => {
+                setActiveSection(item.id);
+                setIsMobileMenuOpen(false);
+              }}
               className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 isActive
                   ? 'bg-blue-50 text-blue-700'
@@ -135,5 +163,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSectio
         </button>
       </div>
     </div>
+    </>
   );
 };

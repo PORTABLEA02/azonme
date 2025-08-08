@@ -125,69 +125,69 @@ export const TeachersList: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gestion des enseignants</h1>
           <p className="text-gray-600 mt-1">Gérer les profils et informations des enseignants</p>
         </div>
-        <Button>
+        <Button className="w-full sm:w-auto">
           <Plus className="w-4 h-4 mr-2" />
           Nouvel enseignant
         </Button>
       </div>
 
       {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total enseignants</p>
-                <p className="text-2xl font-bold text-gray-900">{teachers.length}</p>
+                <p className="text-xs md:text-sm font-medium text-gray-600">Total enseignants</p>
+                <p className="text-xl md:text-2xl font-bold text-gray-900">{teachers.length}</p>
               </div>
-              <Users className="w-8 h-8 text-blue-600" />
+              <Users className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Enseignants actifs</p>
-                <p className="text-2xl font-bold text-emerald-600">
+                <p className="text-xs md:text-sm font-medium text-gray-600">Enseignants actifs</p>
+                <p className="text-xl md:text-2xl font-bold text-emerald-600">
                   {teachers.filter(t => t.status === 'active').length}
                 </p>
               </div>
-              <UserCheck className="w-8 h-8 text-emerald-600" />
+              <UserCheck className="w-6 h-6 md:w-8 md:h-8 text-emerald-600" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Enseignants inactifs</p>
-                <p className="text-2xl font-bold text-red-600">
+                <p className="text-xs md:text-sm font-medium text-gray-600">Enseignants inactifs</p>
+                <p className="text-xl md:text-2xl font-bold text-red-600">
                   {teachers.filter(t => t.status === 'inactive').length}
                 </p>
               </div>
-              <UserX className="w-8 h-8 text-red-600" />
+              <UserX className="w-6 h-6 md:w-8 md:h-8 text-red-600" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Matières enseignées</p>
-                <p className="text-2xl font-bold text-purple-600">
+                <p className="text-xs md:text-sm font-medium text-gray-600">Matières enseignées</p>
+                <p className="text-xl md:text-2xl font-bold text-purple-600">
                   {new Set(teachers.flatMap(t => t.subjects)).size}
                 </p>
               </div>
-              <BookOpen className="w-8 h-8 text-purple-600" />
+              <BookOpen className="w-6 h-6 md:w-8 md:h-8 text-purple-600" />
             </div>
           </CardContent>
         </Card>
@@ -195,7 +195,7 @@ export const TeachersList: React.FC = () => {
 
       {/* Filters */}
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="p-4 md:p-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <Input
@@ -224,7 +224,7 @@ export const TeachersList: React.FC = () => {
                   <option key={subject.id} value={subject.id}>{subject.name}</option>
                 ))}
               </select>
-              <Button variant="outline">
+              <Button variant="outline" className="w-full sm:w-auto">
                 <Filter className="w-4 h-4 mr-2" />
                 Filtres
               </Button>
@@ -234,10 +234,10 @@ export const TeachersList: React.FC = () => {
       </Card>
 
       {/* Teachers Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {filteredTeachers.map((teacher) => (
           <Card key={teacher.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <Avatar 
@@ -259,7 +259,7 @@ export const TeachersList: React.FC = () => {
               </div>
 
               <div className="space-y-2 mb-4">
-                <div className="flex items-center text-sm text-gray-600">
+                <div className="flex items-center text-sm text-gray-600 break-all">
                   <Mail className="w-4 h-4 mr-2" />
                   {teacher.email}
                 </div>
@@ -303,7 +303,7 @@ export const TeachersList: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-4 border-t border-gray-100 space-y-2 sm:space-y-0">
                 <span className={`px-2 py-1 text-xs rounded-full ${
                   teacher.status === 'active' 
                     ? 'bg-emerald-100 text-emerald-800' 
@@ -341,7 +341,7 @@ export const TeachersList: React.FC = () => {
 
       {filteredTeachers.length === 0 && (
         <Card>
-          <CardContent className="p-12 text-center">
+          <CardContent className="p-8 md:p-12 text-center">
             <div className="text-gray-400 mb-4">
               <Search className="w-12 h-12 mx-auto" />
             </div>

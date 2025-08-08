@@ -44,7 +44,7 @@ export const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-emerald-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-emerald-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
@@ -64,7 +64,7 @@ export const LoginForm: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-3">
                   Sélectionner votre rôle
                 </label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {roles.map((roleOption) => {
                     const Icon = roleOption.icon;
                     return (
@@ -112,15 +112,11 @@ export const LoginForm: React.FC = () => {
                 </div>
               )}
 
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full"
-              >
+              <Button type="submit" disabled={isLoading} className="w-full">
                 {isLoading ? 'Connexion...' : 'Se connecter'}
               </Button>
 
-              <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
+              <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg text-center sm:text-left">
                 <strong>Comptes de démonstration :</strong><br />
                 Cliquez sur un rôle ci-dessus pour remplir automatiquement les identifiants.
                 Mot de passe : demo123

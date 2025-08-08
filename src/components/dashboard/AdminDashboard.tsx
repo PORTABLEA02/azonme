@@ -107,20 +107,20 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
             <Card key={stat.title}>
-              <CardContent className="p-6">
+              <CardContent className="p-4 md:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
+                    <p className="text-xs md:text-sm font-medium text-gray-600">{stat.title}</p>
+                    <p className="text-xl md:text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
                     <p className="text-sm text-emerald-600 mt-1">{stat.change} ce mois</p>
                   </div>
-                  <div className={`w-12 h-12 ${stat.bgColor} rounded-lg flex items-center justify-center`}>
-                    <Icon className={`w-6 h-6 ${stat.color}`} />
+                  <div className={`w-10 h-10 md:w-12 md:h-12 ${stat.bgColor} rounded-lg flex items-center justify-center`}>
+                    <Icon className={`w-5 h-5 md:w-6 md:h-6 ${stat.color}`} />
                   </div>
                 </div>
               </CardContent>
@@ -129,7 +129,7 @@ export const AdminDashboard: React.FC = () => {
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Recent Activities */}
         <Card>
           <CardHeader>
@@ -138,7 +138,7 @@ export const AdminDashboard: React.FC = () => {
               Activités récentes
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 md:p-6">
             <div className="space-y-4">
               {recentActivities.map((activity) => (
                 <div key={activity.id} className="flex items-start space-x-3">
@@ -165,15 +165,15 @@ export const AdminDashboard: React.FC = () => {
               Événements à venir
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 md:p-6">
             <div className="space-y-4">
               {upcomingEvents.map((event) => (
-                <div key={event.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={event.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 rounded-lg space-y-2 sm:space-y-0">
                   <div>
                     <p className="font-medium text-gray-900">{event.title}</p>
                     <p className="text-sm text-gray-600">{event.time}</p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-left sm:text-right">
                     <p className="text-sm font-medium text-blue-600">{event.date}</p>
                   </div>
                 </div>
@@ -184,7 +184,7 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Performance Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
@@ -192,7 +192,7 @@ export const AdminDashboard: React.FC = () => {
               Performances
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 md:p-6">
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between text-sm">
@@ -229,7 +229,7 @@ export const AdminDashboard: React.FC = () => {
           <CardHeader>
             <CardTitle>Classes populaires</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 md:p-6">
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm">6ème A</span>
@@ -254,7 +254,7 @@ export const AdminDashboard: React.FC = () => {
               Finances
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 md:p-6">
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600">Recettes ce mois</span>
