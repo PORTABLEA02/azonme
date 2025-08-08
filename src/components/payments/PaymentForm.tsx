@@ -34,8 +34,6 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [availableInstallments, setAvailableInstallments] = useState<any[]>([]);
 
-  if (!isOpen) return null;
-
   // Simuler les échéances disponibles pour ce frais
   React.useEffect(() => {
     if (fee) {
@@ -52,6 +50,8 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
       }
     }
   }, [fee]);
+
+  if (!isOpen) return null;
 
   const paymentMethods = [
     { id: 'PM-001', name: 'Espèces', code: 'cash', requiresReference: false },
