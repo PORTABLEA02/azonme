@@ -29,18 +29,18 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({
   };
 
   // Créer une grille des créneaux horaires uniques
-  const uniqueTimeSlots = timeSlots.reduce((acc, slot) => {
-    const timeKey = `${slot.startTime}-${slot.endTime}`;
-    if (!acc.find(s => `${s.startTime}-${s.endTime}` === timeKey)) {
-      acc.push({
-        startTime: slot.startTime,
-        endTime: slot.endTime,
-        isReserved: slot.isReserved,
-        reservationType: slot.reservationType,
+  const generateHourlySlots = () => {
+    const slots = [];
+    for (let hour = 7; hour < 19; hour++) {
+      slots.push({
+        startTime: `${hour.toString().padStart(2, '0')}:00`,
+        endTime: `${(hour + 1).toString().padStart(2, '0')}:00`,
       });
     }
-    return acc;
-  }, []);
+    return slots;
+  };
+
+  const uniqueTimeSlots = generateHourlySlots();
 
   // Trier les créneaux par heure de début
   uniqueTimeSlots.sort((a, b) => a.startTime.localeCompare(b.startTime));
@@ -58,27 +58,24 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({
   };
 
   const renderAssignmentCell = (assignment: any, slotInfo: any) => {
-    if (slotInfo?.isReserved) {
-      return (
-        <div className="h-16 bg-gray-100 border border-gray-200 rounded p-2 flex items-center justify-center">
-          <span className="text-xs text-gray-500 font-medium">
-            {slotInfo.reservationType === 'break' ? 'Pause' : 'Réservé'}
-          </span>
-        </div>
-      );
-    }
-
     if (!assignment) {
       return (
-        <div className="h-16 bg-white border border-gray-200 rounded hover:bg-gray-50 cursor-pointer transition-colors">
+        <div className="h-20 bg-white border border-gray-200 rounded hover:bg-gray-50 cursor-pointer transition-colors">
         </div>
       );
     }
 
+    // Calculer la hauteur en fonction de la durée
+    const duration = assignment.duration || 60;
+    const heightClass = duration > 60 ? 'h-40' : 'h-20';
+
     return (
-      <div className="h-16 bg-blue-50 border border-blue-200 rounded p-2 hover:bg-blue-100 cursor-pointer transition-colors">
+      <div className={`${heightClass} bg-blue-50 border border-blue-200 rounded p-2 hover:bg-blue-100 cursor-pointer transition-colors`}>
         <div className="text-xs font-medium text-blue-900 truncate">
           {assignment.subjectName}
+        </div>
+        <div className="text-xs text-blue-600 font-medium">
+          {assignment.startTime} - {assignment.endTime}
         </div>
         <div className="text-xs text-blue-700 mt-1 space-y-0.5">
           {viewType !== 'teacher' && (
@@ -93,7 +90,7 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({
               <span className="truncate">{assignment.className}</span>
             </div>
           )}
-          {viewType !== 'room' && (
+          {viewType !== 'room' && assignment.roomName && assignment.roomName !== 'Aucune salle' && (
             <div className="flex items-center">
               <MapPin className="w-3 h-3 mr-1" />
               <span className="truncate">{assignment.roomName}</span>
@@ -139,11 +136,10 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({
                   </td>
                   {workingDays.map(day => {
                     const assignment = getAssignmentForSlot(day, slot.startTime);
-                    const slotInfo = getSlotInfo(slot.startTime, slot.endTime);
                     
                     return (
                       <td key={day} className="p-2">
-                        {renderAssignmentCell(assignment, slotInfo)}
+                        {renderAssignmentCell(assignment, null)}
                       </td>
                     );
                   })}
@@ -158,10 +154,6 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({
           <div className="flex items-center">
             <div className="w-4 h-4 bg-blue-50 border border-blue-200 rounded mr-2"></div>
             <span className="text-gray-600">Cours programmé</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-4 h-4 bg-gray-100 border border-gray-200 rounded mr-2"></div>
-            <span className="text-gray-600">Créneau réservé</span>
           </div>
           <div className="flex items-center">
             <div className="w-4 h-4 bg-white border border-gray-200 rounded mr-2"></div>

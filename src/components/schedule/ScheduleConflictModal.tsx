@@ -24,8 +24,6 @@ export const ScheduleConflictModal: React.FC<ScheduleConflictModalProps> = ({
         return <Users className="w-5 h-5 text-red-600" />;
       case 'room_conflict':
         return <MapPin className="w-5 h-5 text-red-600" />;
-      case 'reserved_slot':
-        return <Clock className="w-5 h-5 text-amber-600" />;
       default:
         return <AlertTriangle className="w-5 h-5 text-red-600" />;
     }
@@ -39,8 +37,6 @@ export const ScheduleConflictModal: React.FC<ScheduleConflictModalProps> = ({
         return 'Conflit de classe';
       case 'room_conflict':
         return 'Conflit de salle';
-      case 'reserved_slot':
-        return 'Créneau réservé';
       default:
         return 'Conflit détecté';
     }
@@ -48,8 +44,6 @@ export const ScheduleConflictModal: React.FC<ScheduleConflictModalProps> = ({
 
   const getConflictColor = (type: string) => {
     switch (type) {
-      case 'reserved_slot':
-        return 'border-amber-200 bg-amber-50';
       default:
         return 'border-red-200 bg-red-50';
     }
@@ -136,7 +130,7 @@ export const ScheduleConflictModal: React.FC<ScheduleConflictModalProps> = ({
               <ul className="text-sm text-blue-800 space-y-1">
                 <li>• Choisir un autre créneau horaire disponible</li>
                 <li>• Sélectionner un autre enseignant pour cette matière</li>
-                <li>• Utiliser une salle différente</li>
+                <li>• Utiliser une salle différente ou laisser sans salle</li>
                 <li>• Modifier l'emploi du temps existant si nécessaire</li>
               </ul>
             </div>
@@ -148,7 +142,6 @@ export const ScheduleConflictModal: React.FC<ScheduleConflictModalProps> = ({
                 <li>• RG-EDT-3.1 : Un enseignant ne peut enseigner qu'à une seule classe à la fois</li>
                 <li>• RG-EDT-3.2 : Une classe ne peut recevoir qu'un seul cours à la fois</li>
                 <li>• RG-EDT-3.3 : Une salle ne peut accueillir qu'une seule classe à la fois</li>
-                <li>• RG-EDT-3.4 : Aucun cours dans les créneaux réservés</li>
               </ul>
             </div>
 

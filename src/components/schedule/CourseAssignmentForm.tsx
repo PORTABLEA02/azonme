@@ -28,12 +28,12 @@ export const CourseAssignmentForm: React.FC<CourseAssignmentFormProps> = ({
     teacherName: assignment?.teacherName || '',
     classId: assignment?.classId || '',
     className: assignment?.className || '',
-    roomId: assignment?.roomId || '',
-    roomName: assignment?.roomName || '',
+    roomId: assignment?.roomId || 'none',
+    roomName: assignment?.roomName || 'Aucune salle',
     day: assignment?.day || 'monday',
     startTime: assignment?.startTime || '',
     endTime: assignment?.endTime || '',
-    duration: assignment?.duration || 60,
+    duration: assignment?.duration || 120,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -92,7 +92,6 @@ export const CourseAssignmentForm: React.FC<CourseAssignmentFormProps> = ({
     if (!formData.subjectId) newErrors.subjectId = 'La matière est obligatoire';
     if (!formData.teacherId) newErrors.teacherId = 'L\'enseignant est obligatoire';
     if (!formData.classId) newErrors.classId = 'La classe est obligatoire';
-    if (!formData.roomId) newErrors.roomId = 'La salle est obligatoire';
     if (!formData.day) newErrors.day = 'Le jour est obligatoire';
     if (!formData.startTime) newErrors.startTime = 'L\'heure de début est obligatoire';
     if (!formData.endTime) newErrors.endTime = 'L\'heure de fin est obligatoire';
@@ -100,6 +99,20 @@ export const CourseAssignmentForm: React.FC<CourseAssignmentFormProps> = ({
     // Vérification de la cohérence horaire
     if (formData.startTime && formData.endTime && formData.startTime >= formData.endTime) {
       newErrors.endTime = 'L\'heure de fin doit être postérieure à l\'heure de début';
+    }
+
+    // Vérification de la durée maximale (2 heures)
+    if (formData.startTime && formData.endTime) {
+      const start = new Date(`2000-01-01T${formData.startTime}:00`);
+      const end = new Date(`2000-01-01T${formData.endTime}:00`);
+      const durationMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
+      
+      if (durationMinutes > 120) {
+        newErrors.endTime = 'La durée d\'un cours ne peut pas dépasser 2 heures';
+      }
+      
+      // Mettre à jour la durée calculée
+      setFormData(prev => ({ ...prev, duration: durationMinutes }));
     }
 
     // Vérification que l'enseignant peut enseigner cette matière
@@ -159,6 +172,8 @@ export const CourseAssignmentForm: React.FC<CourseAssignmentFormProps> = ({
       const room = rooms.find(r => r.id === value);
       if (room) {
         setFormData(prev => ({ ...prev, roomName: room.name }));
+      } else if (value === 'none') {
+        setFormData(prev => ({ ...prev, roomName: 'Aucune salle' }));
       }
     }
 
@@ -169,9 +184,18 @@ export const CourseAssignmentForm: React.FC<CourseAssignmentFormProps> = ({
   };
 
   // Filtrer les créneaux disponibles pour le jour sélectionné
-  const availableTimeSlots = timeSlots.filter(slot => 
-    slot.day === formData.day && !slot.isReserved
-  );
+  const availableTimeSlots = timeSlots.filter(slot => slot.day === formData.day);
+
+  // Générer toutes les heures possibles de 07:00 à 19:00
+  const generateTimeOptions = () => {
+    const times = [];
+    for (let hour = 7; hour <= 19; hour++) {
+      times.push(`${hour.toString().padStart(2, '0')}:00`);
+    }
+    return times;
+  };
+
+  const timeOptions = generateTimeOptions();
 
   // Filtrer les enseignants qui peuvent enseigner la matière sélectionnée
   const availableTeachers = formData.subjectId 
@@ -262,7 +286,7 @@ export const CourseAssignmentForm: React.FC<CourseAssignmentFormProps> = ({
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Salle *
+                    Salle (optionnel)
                   </label>
                   <select
                     value={formData.roomId}
@@ -270,9 +294,8 @@ export const CourseAssignmentForm: React.FC<CourseAssignmentFormProps> = ({
                     className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       errors.roomId ? 'border-red-500' : ''
                     }`}
-                    required
                   >
-                    <option value="">Sélectionner une salle</option>
+                    <option value="none">Aucune salle assignée</option>
                     {rooms.map(room => (
                       <option key={room.id} value={room.id}>{room.name}</option>
                     ))}
@@ -317,9 +340,9 @@ export const CourseAssignmentForm: React.FC<CourseAssignmentFormProps> = ({
                     required
                   >
                     <option value="">Sélectionner l'heure</option>
-                    {availableTimeSlots.map(slot => (
-                      <option key={slot.id} value={slot.startTime}>
-                        {slot.startTime}
+                    {timeOptions.slice(0, -1).map(time => (
+                      <option key={time} value={time}>
+                        {time}
                       </option>
                     ))}
                   </select>
@@ -339,9 +362,9 @@ export const CourseAssignmentForm: React.FC<CourseAssignmentFormProps> = ({
                     required
                   >
                     <option value="">Sélectionner l'heure</option>
-                    {availableTimeSlots.map(slot => (
-                      <option key={slot.id} value={slot.endTime}>
-                        {slot.endTime}
+                    {timeOptions.slice(1).map(time => (
+                      <option key={time} value={time}>
+                        {time}
                       </option>
                     ))}
                   </select>
@@ -355,9 +378,14 @@ export const CourseAssignmentForm: React.FC<CourseAssignmentFormProps> = ({
                   <div className="flex items-center space-x-2">
                     <Clock className="w-5 h-5 text-blue-600" />
                     <span className="text-sm font-medium text-blue-900">
-                      Durée du cours : {formData.duration} minutes
+                      Durée du cours : {formData.duration} minutes ({(formData.duration / 60).toFixed(1)}h)
                     </span>
                   </div>
+                  {formData.duration > 120 && (
+                    <div className="mt-2 text-sm text-red-600">
+                      ⚠️ La durée maximale recommandée est de 2 heures (120 minutes)
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -369,8 +397,10 @@ export const CourseAssignmentForm: React.FC<CourseAssignmentFormProps> = ({
                     <p className="font-medium mb-1">Vérifications automatiques :</p>
                     <ul className="space-y-1">
                       <li>• RG-EDT-2.1 : Tous les champs obligatoires sont vérifiés</li>
-                      <li>• RG-EDT-2.2 : Disponibilité de l'enseignant, classe et salle</li>
+                      <li>• RG-EDT-2.2 : Disponibilité de l'enseignant et de la classe</li>
                       <li>• RG-EDT-3.x : Prévention des conflits d'horaires</li>
+                      <li>• Durée maximale : 2 heures par cours</li>
+                      <li>• Horaires : 07:00 à 19:00</li>
                     </ul>
                   </div>
                 </div>

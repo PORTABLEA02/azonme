@@ -29,13 +29,15 @@ export const ScheduleManager: React.FC = () => {
       { id: 'slot-1', startTime: '07:00', endTime: '08:00', day: 'monday' },
       { id: 'slot-2', startTime: '08:00', endTime: '09:00', day: 'monday' },
       { id: 'slot-3', startTime: '09:00', endTime: '10:00', day: 'monday' },
-      { id: 'slot-4', startTime: '10:00', endTime: '10:15', day: 'monday', isReserved: true, reservationType: 'break' },
-      { id: 'slot-5', startTime: '10:15', endTime: '11:15', day: 'monday' },
-      { id: 'slot-6', startTime: '11:15', endTime: '12:15', day: 'monday' },
-      { id: 'slot-7', startTime: '12:15', endTime: '13:30', day: 'monday', isReserved: true, reservationType: 'break' },
-      { id: 'slot-8', startTime: '13:30', endTime: '14:30', day: 'monday' },
-      { id: 'slot-9', startTime: '14:30', endTime: '15:30', day: 'monday' },
-      { id: 'slot-10', startTime: '15:30', endTime: '16:30', day: 'monday' },
+      { id: 'slot-4', startTime: '10:00', endTime: '11:00', day: 'monday' },
+      { id: 'slot-5', startTime: '11:00', endTime: '12:00', day: 'monday' },
+      { id: 'slot-6', startTime: '12:00', endTime: '13:00', day: 'monday' },
+      { id: 'slot-7', startTime: '13:00', endTime: '14:00', day: 'monday' },
+      { id: 'slot-8', startTime: '14:00', endTime: '15:00', day: 'monday' },
+      { id: 'slot-9', startTime: '15:00', endTime: '16:00', day: 'monday' },
+      { id: 'slot-10', startTime: '16:00', endTime: '17:00', day: 'monday' },
+      { id: 'slot-11', startTime: '17:00', endTime: '18:00', day: 'monday' },
+      { id: 'slot-12', startTime: '18:00', endTime: '19:00', day: 'monday' },
     ],
     schoolYear: '2024-2025',
   };
@@ -119,70 +121,86 @@ export const ScheduleManager: React.FC = () => {
   const checkForConflicts = (newAssignment: any) => {
     const conflicts = [];
 
+    // Calculer les créneaux occupés par le nouveau cours
+    const newStart = new Date(`2000-01-01T${newAssignment.startTime}:00`);
+    const newEnd = new Date(`2000-01-01T${newAssignment.endTime}:00`);
+
     // RG-EDT-3.1 : Un enseignant ne peut enseigner qu'à une seule classe à la fois
+    const teacherConflict = courseAssignments.find(assignment => {
+      if (assignment.teacherId !== newAssignment.teacherId || 
+          assignment.day !== newAssignment.day || 
+          assignment.id === newAssignment.id) {
+        return false;
+      }
+      
+      const existingStart = new Date(`2000-01-01T${assignment.startTime}:00`);
+      const existingEnd = new Date(`2000-01-01T${assignment.endTime}:00`);
+      
+      // Vérifier le chevauchement
+      return (newStart < existingEnd && newEnd > existingStart);
+    });
+
+    const classConflict = courseAssignments.find(assignment => {
+      if (assignment.classId !== newAssignment.classId || 
+          assignment.day !== newAssignment.day || 
+          assignment.id === newAssignment.id) {
+        return false;
+      }
+      
+      const existingStart = new Date(`2000-01-01T${assignment.startTime}:00`);
+      const existingEnd = new Date(`2000-01-01T${assignment.endTime}:00`);
+      
+      return (newStart < existingEnd && newEnd > existingStart);
+    });
+
+    const roomConflict = courseAssignments.find(assignment => {
+      if (assignment.roomId !== newAssignment.roomId || 
+          assignment.roomId === 'none' ||
+          newAssignment.roomId === 'none' ||
+          assignment.day !== newAssignment.day || 
+          assignment.id === newAssignment.id) {
+        return false;
+      }
+      
+      const existingStart = new Date(`2000-01-01T${assignment.startTime}:00`);
+      const existingEnd = new Date(`2000-01-01T${assignment.endTime}:00`);
+      
+      return (newStart < existingEnd && newEnd > existingStart);
+    });
+
+    /* Ancienne logique remplacée par la nouvelle
     const teacherConflict = courseAssignments.find(assignment => 
       assignment.teacherId === newAssignment.teacherId &&
       assignment.day === newAssignment.day &&
       assignment.startTime === newAssignment.startTime &&
       assignment.id !== newAssignment.id
     );
+    */
 
     if (teacherConflict) {
       conflicts.push({
         type: 'teacher_conflict',
-        message: `L'enseignant ${newAssignment.teacherName} a déjà un cours à ce créneau`,
+        message: `L'enseignant ${newAssignment.teacherName} a déjà un cours qui chevauche avec ce créneau`,
         conflictingAssignments: [teacherConflict],
-        timeSlot: { day: newAssignment.day, startTime: newAssignment.startTime }
+        timeSlot: { day: newAssignment.day, startTime: newAssignment.startTime, endTime: newAssignment.endTime }
       });
     }
-
-    // RG-EDT-3.2 : Une classe ne peut recevoir qu'un seul cours à la fois
-    const classConflict = courseAssignments.find(assignment => 
-      assignment.classId === newAssignment.classId &&
-      assignment.day === newAssignment.day &&
-      assignment.startTime === newAssignment.startTime &&
-      assignment.id !== newAssignment.id
-    );
 
     if (classConflict) {
       conflicts.push({
         type: 'class_conflict',
-        message: `La classe ${newAssignment.className} a déjà un cours à ce créneau`,
+        message: `La classe ${newAssignment.className} a déjà un cours qui chevauche avec ce créneau`,
         conflictingAssignments: [classConflict],
-        timeSlot: { day: newAssignment.day, startTime: newAssignment.startTime }
+        timeSlot: { day: newAssignment.day, startTime: newAssignment.startTime, endTime: newAssignment.endTime }
       });
     }
-
-    // RG-EDT-3.3 : Une salle ne peut accueillir qu'une seule classe à la fois
-    const roomConflict = courseAssignments.find(assignment => 
-      assignment.roomId === newAssignment.roomId &&
-      assignment.day === newAssignment.day &&
-      assignment.startTime === newAssignment.startTime &&
-      assignment.id !== newAssignment.id
-    );
 
     if (roomConflict) {
       conflicts.push({
         type: 'room_conflict',
-        message: `La salle ${newAssignment.roomName} est déjà occupée à ce créneau`,
+        message: `La salle ${newAssignment.roomName} est déjà occupée sur un créneau qui chevauche`,
         conflictingAssignments: [roomConflict],
-        timeSlot: { day: newAssignment.day, startTime: newAssignment.startTime }
-      });
-    }
-
-    // RG-EDT-3.4 : Vérification des créneaux réservés
-    const reservedSlot = schoolSettings.timeSlots.find(slot =>
-      slot.day === newAssignment.day &&
-      slot.startTime === newAssignment.startTime &&
-      slot.isReserved
-    );
-
-    if (reservedSlot) {
-      conflicts.push({
-        type: 'reserved_slot',
-        message: `Ce créneau est réservé pour ${reservedSlot.reservationType}`,
-        conflictingAssignments: [],
-        timeSlot: reservedSlot
+        timeSlot: { day: newAssignment.day, startTime: newAssignment.startTime, endTime: newAssignment.endTime }
       });
     }
 
@@ -246,7 +264,7 @@ export const ScheduleManager: React.FC = () => {
               <div>
                 <p className="text-xs md:text-sm font-medium text-gray-600">Créneaux disponibles</p>
                 <p className="text-xl md:text-2xl font-bold text-emerald-600">
-                  {schoolSettings.timeSlots.filter(slot => !slot.isReserved).length}
+                  {schoolSettings.timeSlots.length}
                 </p>
               </div>
               <Clock className="w-6 h-6 md:w-8 md:h-8 text-emerald-600" />
@@ -358,7 +376,6 @@ export const ScheduleManager: React.FC = () => {
                 <li>• RG-EDT-3.1 : Un enseignant ne peut enseigner qu'à une seule classe à la fois</li>
                 <li>• RG-EDT-3.2 : Une classe ne peut recevoir qu'un seul cours à la fois</li>
                 <li>• RG-EDT-3.3 : Une salle ne peut accueillir qu'une seule classe à la fois</li>
-                <li>• RG-EDT-3.4 : Aucun cours dans les créneaux réservés (pauses, entretiens)</li>
               </ul>
             </div>
           </div>
